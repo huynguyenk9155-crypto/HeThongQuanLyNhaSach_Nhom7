@@ -1,0 +1,64 @@
+@model Tuan6.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-body p-5">
+                <h3 class="card-title text-center mb-4 fw-bold text-primary">Tạo tài khoản mới</h3>
+                
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    
+                    <div class="form-floating mb-3">
+                        <input asp-for="UserName" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Username" />
+                        <label asp-for="UserName"></label>
+                        <span asp-validation-for="UserName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="FullName" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Full name" />
+                        <label asp-for="FullName"></label>
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Address" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Address" />
+                        <label asp-for="Address"></label>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" type="email" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="name@example.com" />
+                        <label asp-for="Email">Địa chỉ Email</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" type="password" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Password" />
+                        <label asp-for="Password"></label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="ConfirmPassword" type="password" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Confirm Password" />
+                        <label asp-for="ConfirmPassword"></label>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm">Đăng ký</button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted mb-0">Đã có tài khoản? <a asp-action="Login" class="text-primary fw-bold text-decoration-none">Đăng nhập ngay</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,34 @@
+@model Tuan6.Models.Category
+@{
+    ViewData["Title"] = "Cập nhật Danh mục";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-body p-5">
+                <h3 class="card-title text-center mb-4 fw-bold text-primary">Cập nhật Danh mục</h3>
+                
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="form-floating mb-4">
+                        <input asp-for="Name" class="form-control border-top-0 border-end-0 border-start-0 rounded-0" placeholder="Tên danh mục" />
+                        <label asp-for="Name">Tên Danh mục</label>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-3">
+                        <a asp-action="Index" class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold">Hủy</a>
+                        <button type="submit" class="btn btn-primary w-50 py-2 rounded-pill fw-bold shadow-sm">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
