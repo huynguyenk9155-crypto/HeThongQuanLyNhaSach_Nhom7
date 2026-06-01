@@ -94,7 +94,6 @@ C:\Tuan6\obj\Debug\net10.0\refint\Tuan6.dll
 C:\Tuan6\obj\Debug\net10.0\Tuan6.pdb
 C:\Tuan6\obj\Debug\net10.0\Tuan6.genruntimeconfig.cache
 C:\Tuan6\obj\Debug\net10.0\ref\Tuan6.dll
-C:\Tuan6\obj\Debug\net10.0\compressed\vc2nski2tb-{0}-fosamezn9b-fosamezn9b.gz
 C:\Tuan6\bin\Debug\net10.0\Azure.Core.dll
 C:\Tuan6\bin\Debug\net10.0\Azure.Identity.dll
 C:\Tuan6\bin\Debug\net10.0\Humanizer.dll
@@ -223,3 +222,5 @@ C:\Tuan6\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.
 C:\Tuan6\obj\Debug\net10.0\Tuan6.csproj.AssemblyReference.cache
 C:\Tuan6\obj\Debug\net10.0\Tuan6.csproj.Up2Date
 C:\Tuan6\bin\Debug\net10.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Tuan6\obj\Debug\net10.0\Tuan6.sourcelink.json
+C:\Tuan6\obj\Debug\net10.0\compressed\vc2nski2tb-{0}-khu3fiknqt-khu3fiknqt.gz

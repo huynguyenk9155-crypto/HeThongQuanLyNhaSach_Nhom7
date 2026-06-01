@@ -3,17 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tuan6.Models
 {
-    public class ProductImage
+    public class BookImage
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [Required]
         public string Url { get; set; } = string.Empty;
 
-        [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        [ForeignKey("Book")]
+        public int BookId { get; set; }
 
-        public Product? Product { get; set; }
+        public Book? Book { get; set; }
     }
 }

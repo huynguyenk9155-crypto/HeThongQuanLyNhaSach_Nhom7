@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    var recentOrders = ViewBag.RecentOrders as IEnumerable<Tuan6.Models.Order> ?? new List<Tuan6.Models.Order>();
+    var weeklyLabels = ViewBag.WeeklyLabels as List<string> ?? new List<string>();
+    var weeklyData = ViewBag.WeeklyData as List<decimal> ?? new List<decimal>();
+    var maxWeekly = weeklyData.Any() ? weeklyData.Max() : 0;
+    var categorySales = ViewBag.CategorySales;
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>📊 Dashboard</h2>
+        <p>Tổng quan hoạt động hệ thống nhà sách</p>
+    </div>
+</header>
+
+<div class="admin-content">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">📚</div>
+            <div class="stat-info">
+                <h4>@ViewBag.TotalBooks</h4>
+                <p>Tổng số sách</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+                <h4>@ViewBag.TotalRevenue.ToString("N0")đ</h4>
+                <p>Doanh thu tích lũy</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">📦</div>
+            <div class="stat-info">
+                <h4>@ViewBag.TotalOrders</h4>
+                <p>Tổng số đơn hàng</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">👥</div>
+            <div class="stat-info">
+                <h4>@ViewBag.TotalUsers</h4>
+                <p>Tổng thành viên</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <!-- Weekly Revenue Chart -->
+        <div class="chart-card">
+            <h4>📈 Doanh thu 7 ngày gần đây</h4>
+            <div class="bar-chart">
+                @for (int i = 0; i < weeklyLabels.Count; i++)
+                {
+                    var label = weeklyLabels[i];
+                    var val = weeklyData[i];
+                    var heightPct = maxWeekly > 0 ? (double)(val / maxWeekly) * 80 + 10 : 10; // minimum 10% for bar
+                    if (val == 0) { heightPct = 5; } // flat line if 0
+                    
+                    <div class="bar" style="height: @(heightPct)%; background: linear-gradient(180deg, #667eea, #764ba2);" title="Doanh thu: @val.ToString("N0")đ">
+                        <span class="bar-label">@label</span>
+                        <span class="bar-value">@((val / 1000).ToString("N0"))k</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Best Selling Categories -->
+        <div class="chart-card">
+            <h4>📊 Tỷ lệ sách bán theo Thể loại</h4>
+            <div class="donut-chart" style="background: conic-gradient(var(--primary) 0% 50%, var(--success) 50% 80%, var(--warning) 80% 100%);"></div>
+            <div class="donut-legend">
+                @{
+                    string[] colors = { "var(--primary)", "var(--success)", "var(--warning)", "var(--danger)", "var(--gray-400)" };
+                    int colorIdx = 0;
+                }
+                @if (categorySales != null)
+                {
+                    foreach (var item in categorySales)
+                    {
+                        var color = colors[colorIdx % colors.Length];
+                        colorIdx++;
+                        <div class="legend-item">
+                            <span><span class="dot" style="background: @color;"></span> @item.CategoryName</span>
+                            <span class="value">@item.Count cuốn (@(((double)item.Percentage).ToString("F1"))%)</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="text-align: center; color: var(--gray-500); padding-top: 16px;">Chưa có dữ liệu bán hàng hoàn thành.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="data-table-card">
+        <div class="data-table-header">
+            <h4>📦 Đơn hàng gần đây</h4>
+            <a asp-controller="Order" asp-action="Index" style="color: var(--primary); font-size: 14px; font-weight: 600;">Xem tất cả đơn →</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (recentOrders.Any())
+                {
+                    foreach (var item in recentOrders)
+                    {
+                        <tr>
+                            <td><strong>#DH-@item.Id.ToString("D4")</strong></td>
+                            <td>@item.FullName</td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><strong style="color: var(--danger);">@item.TotalAmount.ToString("N0")đ</strong></td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge pending">⏸ Chờ xác nhận</span>
+                                }
+                                else if (item.Status == "Shipping")
+                                {
+                                    <span class="status-badge shipping">🚚 Đang giao</span>
+                                }
+                                else if (item.Status == "Completed")
+                                {
+                                    <span class="status-badge completed">✅ Hoàn thành</span>
+                                }
+                                else if (item.Status == "Cancelled")
+                                {
+                                    <span class="status-badge cancelled">❌ Đã hủy</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--gray-500); padding: 24px;">Chưa có đơn hàng nào trong hệ thống.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

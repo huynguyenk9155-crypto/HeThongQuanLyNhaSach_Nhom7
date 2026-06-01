@@ -1,0 +1,69 @@
+@model IEnumerable<Tuan6.Models.Order>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<main class="user-main">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">📦 Đơn hàng của tôi</h2>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 48px; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow);">
+            <div style="font-size: 64px; margin-bottom: 16px;">📦</div>
+            <h3>Bạn chưa đặt đơn hàng nào!</h3>
+            <p style="color: var(--gray-600); margin: 12px 0 24px;">Hãy chọn những cuốn sách yêu thích và tiến hành đặt hàng.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Khám phá sách ngay</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-items" style="border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow);">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Người nhận</th>
+                        <th>Số điện thoại</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>#DH-@item.Id.ToString("D4")</strong></td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.FullName</td>
+                            <td>@item.PhoneNumber</td>
+                            <td><strong>@item.TotalAmount.ToString("N0")đ</strong></td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge pending">⏸ Chờ xác nhận</span>
+                                }
+                                else if (item.Status == "Shipping")
+                                {
+                                    <span class="status-badge shipping">🚚 Đang giao hàng</span>
+                                }
+                                else if (item.Status == "Completed")
+                                {
+                                    <span class="status-badge completed">✅ Hoàn thành</span>
+                                }
+                                else if (item.Status == "Cancelled")
+                                {
+                                    <span class="status-badge cancelled">❌ Đã hủy</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</main>

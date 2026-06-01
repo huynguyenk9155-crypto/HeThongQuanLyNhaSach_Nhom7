@@ -14,6 +14,6 @@ namespace Tuan6.Models
         [Display(Name = "Tên danh mục")]
         public string Name { get; set; } = string.Empty;
 
-        public List<Product>? Products { get; set; }
+        public List<Book>? Books { get; set; }
     }
 }

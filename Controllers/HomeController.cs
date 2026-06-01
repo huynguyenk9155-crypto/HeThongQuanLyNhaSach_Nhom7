@@ -1,59 +1,91 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Tuan6.Models;
 using Tuan6.Repositories;
 
-namespace Tuan6.Controllers;
-
-public class HomeController : Controller
+namespace Tuan6.Controllers
 {
-    private readonly IProductRepository _productRepository;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(
-        IProductRepository productRepository,
-        ICategoryRepository categoryRepository,
-        ILogger<HomeController> logger)
+    [Authorize]
+    public class HomeController : Controller
     {
-        _productRepository = productRepository;
-        _categoryRepository = categoryRepository;
-        _logger = logger;
-    }
+        private readonly IBookRepository _bookRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<HomeController> _logger;
 
-    public async Task<IActionResult> Index(int? categoryId)
-    {
-        var products = await _productRepository.GetAllAsync();
-        var categories = await _categoryRepository.GetAllAsync();
-
-        if (categoryId.HasValue)
+        public HomeController(
+            IBookRepository bookRepository,
+            ICategoryRepository categoryRepository,
+            ILogger<HomeController> logger)
         {
-            products = products.Where(p => p.CategoryId == categoryId.Value).ToList();
+            _bookRepository = bookRepository;
+            _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
-        ViewBag.Categories = categories;
-        ViewBag.SelectedCategoryId = categoryId;
-        return View(products);
-    }
-
-    public async Task<IActionResult> Details(int id)
-    {
-        var product = await _productRepository.GetByIdAsync(id);
-        if (product == null)
+        // GET: /Home/Index
+        public async Task<IActionResult> Index(int? categoryId, string? searchString, int pageNumber = 1)
         {
-            return NotFound();
+            const int pageSize = 8;
+            var books = await _bookRepository.GetAllAsync();
+            var categories = await _categoryRepository.GetAllAsync();
+
+            // Search by Title or Author
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var query = searchString.ToLower().Trim();
+                books = books.Where(b => b.Title.ToLower().Contains(query) || 
+                                         b.Author.ToLower().Contains(query)).ToList();
+            }
+
+            // Filter by Category
+            if (categoryId.HasValue)
+            {
+                books = books.Where(b => b.CategoryId == categoryId.Value).ToList();
+            }
+
+            // Pagination calculation
+            var totalBooks = books.Count();
+            var totalPages = (int)Math.Ceiling((double)totalBooks / pageSize);
+            
+            // Boundary checks
+            pageNumber = Math.Max(1, Math.Min(pageNumber, totalPages > 0 ? totalPages : 1));
+            
+            var paginatedBooks = books
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.Categories = categories;
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SearchString = searchString;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalBooks = totalBooks;
+
+            return View(paginatedBooks);
         }
-        return View(product);
-    }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        // GET: /Home/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var book = await _bookRepository.GetByIdAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+            return View(book);
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }

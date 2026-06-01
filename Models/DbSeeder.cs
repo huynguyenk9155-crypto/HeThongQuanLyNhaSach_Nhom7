@@ -77,48 +77,87 @@ namespace Tuan6.Models
                 }
             }
 
-            // Seed some initial Categories and Products if none exist
-            if (!await context.Categories.AnyAsync())
+            // Seed initial Categories and Books
+            if (!await context.Categories.AnyAsync(c => c.Name == "Văn học"))
             {
-                var phoneCategory = new Category { Name = "Điện thoại" };
-                var laptopCategory = new Category { Name = "Laptop" };
-
-                context.Categories.AddRange(phoneCategory, laptopCategory);
+                // Clear old categories (e.g. Laptop, Điện thoại) from the database
+                var oldCategories = await context.Categories.ToListAsync();
+                context.Categories.RemoveRange(oldCategories);
                 await context.SaveChangesAsync();
 
-                var products = new List<Product>
+                var literatureCat = new Category { Name = "Văn học" };
+                var economyCat = new Category { Name = "Kinh tế" };
+                var scienceCat = new Category { Name = "Khoa học" };
+                var lifeSkillCat = new Category { Name = "Kỹ năng sống" };
+
+                context.Categories.AddRange(literatureCat, economyCat, scienceCat, lifeSkillCat);
+                await context.SaveChangesAsync();
+
+                var books = new List<Book>
                 {
-                    new Product
+                    new Book
                     {
-                        Name = "iPhone 15 Pro Max",
-                        Price = 30000000,
-                        Description = "Điện thoại iPhone 15 Pro Max 256GB chính hãng.",
-                        Category = phoneCategory
+                        Title = "Đắc Nhân Tâm",
+                        Author = "Dale Carnegie",
+                        Price = 79000,
+                        Description = "Cuốn sách đưa ra các lời khuyên về cách thức cư xử, ứng xử và giao tiếp với mọi người để đạt được thành công trong cuộc sống.",
+                        ImageUrl = "/images/dac_nhan_tam.jpg",
+                        StockQuantity = 150,
+                        Category = literatureCat
                     },
-                    new Product
+                    new Book
                     {
-                        Name = "Samsung Galaxy S24 Ultra",
-                        Price = 28000000,
-                        Description = "Điện thoại Samsung Galaxy S24 Ultra mới nhất.",
-                        Category = phoneCategory
+                        Title = "Nhà Giả Kim",
+                        Author = "Paulo Coelho",
+                        Price = 65000,
+                        Description = "Hành trình theo đuổi ước mơ của cậu bé chăn cừu Santiago, truyền cảm hứng mạnh mẽ cho người đọc.",
+                        ImageUrl = "/images/nha_gia_kim.jpg",
+                        StockQuantity = 120,
+                        Category = literatureCat
                     },
-                    new Product
+                    new Book
                     {
-                        Name = "MacBook Pro M3",
-                        Price = 45000000,
-                        Description = "Laptop Apple MacBook Pro M3 Pro 18GB 512GB.",
-                        Category = laptopCategory
+                        Title = "Tư Duy Nhanh Và Chậm",
+                        Author = "Daniel Kahneman",
+                        Price = 135000,
+                        Description = "Kiệt tác phân tích hai hệ thống tư duy chi phối hành vi của con người của nhà tâm lý học đoạt giải Nobel Daniel Kahneman.",
+                        ImageUrl = "/images/tu_duy_nhanh_cham.jpg",
+                        StockQuantity = 80,
+                        Category = scienceCat
                     },
-                    new Product
+                    new Book
                     {
-                        Name = "Dell XPS 13 Plus",
-                        Price = 35000000,
-                        Description = "Laptop Dell XPS 13 Plus Core i7 thế hệ mới.",
-                        Category = laptopCategory
+                        Title = "Sapiens: Lược Sử Loài Người",
+                        Author = "Yuval Noah Harari",
+                        Price = 108000,
+                        Description = "Cuốn sách đi sâu vào lịch sử loài người từ thời kỳ đồ đá cho đến thế kỷ 21, mang đến cái nhìn toàn diện và mới mẻ.",
+                        ImageUrl = "/images/sapiens.jpg",
+                        StockQuantity = 50,
+                        Category = scienceCat
+                    },
+                    new Book
+                    {
+                        Title = "Atomic Habits - Thay Đổi Tí Hon, Hiệu Quả Bất Ngờ",
+                        Author = "James Clear",
+                        Price = 156000,
+                        Description = "Phương pháp cực kỳ hiệu quả để xây dựng thói quen tốt và từ bỏ thói quen xấu thông qua những cải tiến nhỏ hàng ngày.",
+                        ImageUrl = "/images/atomic_habits.jpg",
+                        StockQuantity = 200,
+                        Category = lifeSkillCat
+                    },
+                    new Book
+                    {
+                        Title = "Dám Bị Ghét",
+                        Author = "Ichiro Kishimi",
+                        Price = 108000,
+                        Description = "Cuốn sách giúp bạn giải phóng bản thân khỏi những kỳ vọng của người khác để sống cuộc đời tự do và hạnh phúc theo triết lý Adler.",
+                        ImageUrl = "/images/dam_bi_ghet.jpg",
+                        StockQuantity = 95,
+                        Category = lifeSkillCat
                     }
                 };
 
-                context.Products.AddRange(products);
+                context.Books.AddRange(books);
                 await context.SaveChangesAsync();
             }
         }

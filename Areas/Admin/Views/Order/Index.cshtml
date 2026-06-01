@@ -1,0 +1,153 @@
+@model IEnumerable<Tuan6.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>📦 Quản lý đơn hàng</h2>
+        <p>Theo dõi và xử lý đơn đặt hàng của toàn bộ hệ thống</p>
+    </div>
+</header>
+
+<div class="admin-content">
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <a asp-action="Index" asp-route-status="Pending" style="display: block;">
+            <div class="stat-card @(ViewBag.SelectedStatus == "Pending" ? "active" : "")" style="border: 2px solid @(ViewBag.SelectedStatus == "Pending" ? "var(--warning)" : "transparent");">
+                <div class="stat-icon orange">⏸</div>
+                <div class="stat-info">
+                    <h4>@ViewBag.PendingCount</h4>
+                    <p>Chờ xác nhận</p>
+                </div>
+            </div>
+        </a>
+        <a asp-action="Index" asp-route-status="Shipping" style="display: block;">
+            <div class="stat-card @(ViewBag.SelectedStatus == "Shipping" ? "active" : "")" style="border: 2px solid @(ViewBag.SelectedStatus == "Shipping" ? "var(--primary)" : "transparent");">
+                <div class="stat-icon blue">🚚</div>
+                <div class="stat-info">
+                    <h4>@ViewBag.ShippingCount</h4>
+                    <p>Đang giao hàng</p>
+                </div>
+            </div>
+        </a>
+        <a asp-action="Index" asp-route-status="Completed" style="display: block;">
+            <div class="stat-card @(ViewBag.SelectedStatus == "Completed" ? "active" : "")" style="border: 2px solid @(ViewBag.SelectedStatus == "Completed" ? "var(--success)" : "transparent");">
+                <div class="stat-icon green">✅</div>
+                <div class="stat-info">
+                    <h4>@ViewBag.CompletedCount</h4>
+                    <p>Đã hoàn thành</p>
+                </div>
+            </div>
+        </a>
+        <a asp-action="Index" asp-route-status="Cancelled" style="display: block;">
+            <div class="stat-card @(ViewBag.SelectedStatus == "Cancelled" ? "active" : "")" style="border: 2px solid @(ViewBag.SelectedStatus == "Cancelled" ? "var(--danger)" : "transparent");">
+                <div class="stat-icon red">❌</div>
+                <div class="stat-info">
+                    <h4>@ViewBag.CancelledCount</h4>
+                    <p>Đã hủy đơn</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Data Table -->
+    <div class="data-table-card">
+        <div class="data-table-header">
+            <h4>
+                @if (string.IsNullOrEmpty(ViewBag.SelectedStatus))
+                {
+                    <text>Tất cả đơn hàng</text>
+                }
+                else
+                {
+                    <text>Đơn hàng: @ViewBag.SelectedStatus</text>
+                }
+                (@Model.Count())
+            </h4>
+            <div class="data-table-actions">
+                <input type="text" id="adminOrderSearch" placeholder="🔍 Tìm kiếm đơn hàng...">
+                @if (!string.IsNullOrEmpty(ViewBag.SelectedStatus))
+                {
+                    <a asp-action="Index" class="btn btn-sm btn-outline">Xem tất cả</a>
+                }
+            </div>
+        </div>
+        <table class="data-table" id="ordersTable">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="order-row">
+                            <td><strong>#DH-@item.Id.ToString("D4")</strong></td>
+                            <td>
+                                <div style="font-weight: 600;">@item.FullName</div>
+                                <div style="font-size: 12px; color: var(--gray-500);">SĐT: @item.PhoneNumber</div>
+                            </td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><strong style="color: var(--danger);">@item.TotalAmount.ToString("N0")đ</strong></td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge pending">⏸ Chờ xác nhận</span>
+                                }
+                                else if (item.Status == "Shipping")
+                                {
+                                    <span class="status-badge shipping">🚚 Đang giao</span>
+                                }
+                                else if (item.Status == "Completed")
+                                {
+                                    <span class="status-badge completed">✅ Hoàn thành</span>
+                                }
+                                else if (item.Status == "Cancelled")
+                                {
+                                    <span class="status-badge cancelled">❌ Đã hủy</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="Xem & Cập nhật">👁 Cập nhật</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--gray-500); padding: 32px;">Không có đơn hàng nào ở trạng thái này.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Client-side filtering by customer name or phone
+        document.getElementById('adminOrderSearch').addEventListener('input', function() {
+            var val = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('.order-row');
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                if (text.indexOf(val) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

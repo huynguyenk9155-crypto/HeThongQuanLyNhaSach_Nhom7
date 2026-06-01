@@ -20,7 +20,7 @@ namespace Tuan6.Repositories
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories
-                .Include(c => c.Products)
+                .Include(c => c.Books)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -39,13 +39,13 @@ namespace Tuan6.Repositories
         public async Task DeleteAsync(int id)
         {
             var category = await _context.Categories
-                .Include(c => c.Products)
+                .Include(c => c.Books)
                 .FirstOrDefaultAsync(c => c.Id == id);
             if (category != null)
             {
-                if (category.Products != null && category.Products.Any())
+                if (category.Books != null && category.Books.Any())
                 {
-                    _context.Products.RemoveRange(category.Products);
+                    _context.Books.RemoveRange(category.Books);
                 }
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();

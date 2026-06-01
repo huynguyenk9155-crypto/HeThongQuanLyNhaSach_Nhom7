@@ -1,0 +1,87 @@
+@model Tuan6.Models.Book
+@{
+    ViewData["Title"] = "Thêm sách mới";
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>➕ Thêm sách mới</h2>
+        <p>Thêm đầu sách mới vào cơ sở dữ liệu nhà sách</p>
+    </div>
+    <div class="header-right">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">↩ Quay lại</a>
+    </div>
+</header>
+
+<div class="admin-content">
+    <div class="data-table-card" style="padding: 32px; max-width: 800px; margin: 0 auto;">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="background: #f8d7da; color: #721c24; padding: 16px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="Title">Tên sách *</label>
+                <input asp-for="Title" placeholder="Nhập tên sách" required />
+                <span asp-validation-for="Title" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label asp-for="Author">Tác giả *</label>
+                    <input asp-for="Author" placeholder="Nhập tên tác giả" required />
+                    <span asp-validation-for="Author" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label asp-for="CategoryId">Danh mục *</label>
+                    <select asp-for="CategoryId" asp-items="ViewBag.Categories" style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-300); border-radius: var(--radius); outline: none; font-size: 14px;" required>
+                        <option value="">Chọn danh mục</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label asp-for="Price">Giá bán (đ) *</label>
+                    <input asp-for="Price" type="number" min="1000" placeholder="Ví dụ: 79000" required />
+                    <span asp-validation-for="Price" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label asp-for="StockQuantity">Số lượng tồn kho *</label>
+                    <input asp-for="StockQuantity" type="number" min="0" placeholder="Ví dụ: 100" required />
+                    <span asp-validation-for="StockQuantity" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Hình ảnh đại diện</label>
+                <input type="file" name="imageFile" accept="image/*" style="padding: 10px;" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description">Mô tả sách</label>
+                <textarea asp-for="Description" rows="6" placeholder="Nhập mô tả tóm tắt nội dung cuốn sách..." style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-300); border-radius: var(--radius); font-size: 15px; outline: none; transition: var(--transition); resize: vertical;"></textarea>
+                <span asp-validation-for="Description" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+
+            <div style="margin-top: 32px; display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary btn-lg" style="flex: 1; justify-content: center;">
+                    💾 Lưu đầu sách
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg" style="justify-content: center;">
+                    Hủy bỏ
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

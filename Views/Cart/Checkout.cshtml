@@ -1,0 +1,114 @@
+@model Tuan6.Models.Order
+@using Tuan6.Helpers
+@using Tuan6.Models
+@{
+    ViewData["Title"] = "Thanh toán đơn hàng";
+    var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+    var totalAmount = cart.Sum(i => i.TotalPrice);
+}
+
+<main class="user-main">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">💳 Thanh toán đơn hàng</h2>
+
+    <div class="cart-layout">
+        <!-- Form thông tin giao hàng -->
+        <div class="cart-items" style="padding: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid var(--gray-200);">
+                👤 Thông tin giao hàng
+            </h3>
+
+            <form asp-action="Checkout" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div style="background: #f8d7da; color: #721c24; padding: 16px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;">
+                        <div asp-validation-summary="All"></div>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label asp-for="FullName">Họ tên người nhận *</label>
+                    <input asp-for="FullName" placeholder="Nhập họ tên người nhận" />
+                    <span asp-validation-for="FullName" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label asp-for="PhoneNumber">Số điện thoại nhận hàng *</label>
+                        <input asp-for="PhoneNumber" placeholder="Ví dụ: 0901234567" />
+                        <span asp-validation-for="PhoneNumber" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Address">Địa chỉ nhận hàng (Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành) *</label>
+                    <input asp-for="Address" placeholder="Nhập đầy đủ địa chỉ nhận hàng" />
+                    <span asp-validation-for="Address" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Notes">Ghi chú đơn hàng</label>
+                    <textarea asp-for="Notes" rows="4" placeholder="Ghi chú về thời gian giao hàng, hướng dẫn tìm nhà..." style="width: 100%; padding: 12px 16px; border: 2px solid var(--gray-300); border-radius: var(--radius); font-size: 15px; outline: none; transition: var(--transition); resize: vertical;"></textarea>
+                    <span asp-validation-for="Notes" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+
+                <div style="margin-top: 32px; display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-success btn-lg" style="flex: 1; justify-content: center;">
+                        ✔️ Xác nhận đặt hàng
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline btn-lg" style="justify-content: center;">
+                        Quay lại giỏ hàng
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="cart-summary">
+            <h4>📋 Tóm tắt đơn hàng</h4>
+
+            <div style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 8px;">
+                @foreach (var item in cart)
+                {
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--gray-200);">
+                        <div style="font-size: 24px; width: 36px; height: 48px; background: var(--gray-100); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);" />
+                            }
+                            else
+                            {
+                                <text>📕</text>
+                            }
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Title</div>
+                            <div style="font-size: 11px; color: var(--gray-500);">Số lượng: @item.Quantity</div>
+                        </div>
+                        <div style="font-weight: 700; font-size: 14px; color: var(--danger);">
+                            @item.TotalPrice.ToString("N0")đ
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="summary-row">
+                <span class="label">Tạm tính (@cart.Sum(i => i.Quantity) sản phẩm)</span>
+                <span class="value">@totalAmount.ToString("N0")đ</span>
+            </div>
+            <div class="summary-row">
+                <span class="label">Phí vận chuyển</span>
+                <span class="value" style="color: var(--success);">Miễn phí</span>
+            </div>
+            <div class="summary-row total">
+                <span class="label">Tổng tiền</span>
+                <span class="value">@totalAmount.ToString("N0")đ</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

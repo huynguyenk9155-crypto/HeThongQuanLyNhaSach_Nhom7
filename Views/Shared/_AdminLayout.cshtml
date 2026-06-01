@@ -1,0 +1,137 @@
+@using Microsoft.AspNetCore.Identity
+@using Tuan6.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin BookStore</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">📚</div>
+                <div>
+                    <h2>BookStore</h2>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                @{
+                    var controller = ViewContext.RouteData.Values["Controller"]?.ToString();
+                    var action = ViewContext.RouteData.Values["Action"]?.ToString();
+                }
+                
+                <div class="nav-label">Tổng quan</div>
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="@(controller == "Dashboard" ? "active" : "")">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+
+                <div class="nav-label">Quản lý</div>
+                <a asp-area="Admin" asp-controller="Book" asp-action="Index" class="@(controller == "Book" ? "active" : "")">
+                    <span class="icon">📚</span> Quản lý sách
+                </a>
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="@(controller == "Category" ? "active" : "")">
+                    <span class="icon">📂</span> Quản lý danh mục
+                </a>
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="@(controller == "Order" ? "active" : "")">
+                    <span class="icon">📦</span> Quản lý đơn hàng
+                </a>
+
+                <div class="nav-label">Hệ thống</div>
+                <a asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="icon">🏠</span> Về trang chủ
+                </a>
+                
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="adminLogoutForm" style="display: none;">
+                    @Html.AntiForgeryToken()
+                </form>
+                <a href="javascript:document.getElementById('adminLogoutForm').submit();" style="color: var(--danger);">
+                    <span class="icon">🚪</span> Đăng xuất
+                </a>
+            </nav>
+            
+            @{
+                var user = await UserManager.GetUserAsync(User);
+                var fullName = user?.FullName ?? "Admin";
+                var initials = string.IsNullOrEmpty(fullName) ? "AD" : fullName.Substring(0, Math.Min(2, fullName.Length)).ToUpper();
+            }
+            <div class="sidebar-user">
+                <div class="avatar">@initials</div>
+                <div class="info">
+                    <div class="name">@fullName</div>
+                    <div class="role">Quản trị viên</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ===== TOAST NOTIFICATION =====
+        function showToast(type, message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // Render toast notifications from TempData
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"].ToString()))');
+            });
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"].ToString()))');
+            });
+            </text>
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

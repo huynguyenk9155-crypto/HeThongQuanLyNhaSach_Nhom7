@@ -1,51 +1,173 @@
+@using Microsoft.AspNetCore.Identity
+@using Tuan6.Models
+@using Tuan6.Helpers
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Tuan6</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - BookStore</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Tuan6.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Tuan6</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Header -->
+    <header class="user-header">
+        <div class="header-top">
+            <a class="logo" asp-area="" asp-controller="Home" asp-action="Index">📚 Book<span>Store</span></a>
+            
+            <form asp-controller="Home" asp-action="Index" method="get" class="search-bar">
+                <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="Tìm kiếm sách, tác giả, thể loại...">
+                <button type="submit">🔍</button>
+            </form>
+
+            <div class="header-actions">
+                <button class="header-btn" title="Thông báo">
+                    🔔
+                    <span class="badge">3</span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
+                
+                @{
+                    var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+                    var cartCount = cart.Sum(item => item.Quantity);
+                }
+                <a class="header-btn" asp-area="" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
+                    🛒
+                    @if (cartCount > 0)
+                    {
+                        <span class="badge">@cartCount</span>
+                    }
+                </a>
+
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    var fullName = user?.FullName ?? User.Identity?.Name ?? "User";
+                    var initials = "";
+                    if (!string.IsNullOrEmpty(fullName))
+                    {
+                        var parts = fullName.Split(' ');
+                        initials = parts.Length > 1 
+                            ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper() 
+                            : fullName.Substring(0, Math.Min(2, fullName.Length)).ToUpper();
+                    }
+                    
+                    <div class="dropdown">
+                        <button class="user-avatar-btn" onclick="toggleDropdown('userDropdown')">
+                            <div class="avatar">@initials</div>
+                            <span class="name">@fullName</span>
+                            <span>▾</span>
+                        </button>
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a asp-area="" asp-controller="Order" asp-action="History">📦 Đơn hàng của tôi</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="divider"></div>
+                                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" style="font-weight: bold; color: var(--primary);">🛡️ Quản trị viên</a>
+                            }
+                            <div class="divider"></div>
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" style="display: none;">
+                                @Html.AntiForgeryToken()
+                            </form>
+                            <a href="javascript:document.getElementById('logoutForm').submit();" style="color: var(--danger);">🚪 Đăng xuất</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div style="display: flex; gap: 8px;">
+                        <a asp-area="" asp-controller="Account" asp-action="Login" class="btn btn-outline btn-sm" style="border-radius: 50px;">Đăng nhập</a>
+                        <a asp-area="" asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm" style="border-radius: 50px;">Đăng ký</a>
+                    </div>
+                }
             </div>
+        </div>
+        <nav class="user-nav">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">🏠 Trang chủ</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index">📖 Danh mục</a>
+            <a asp-area="" asp-controller="Order" asp-action="History" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Order" ? "active" : "")">📦 Đơn hàng</a>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Tuan6 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- Main Content -->
+    @RenderBody()
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ===== DROPDOWN =====
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const isActive = dropdown.classList.contains('active');
+            // Close all dropdowns first
+            document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+            // Toggle current
+            if (!isActive) {
+                dropdown.classList.add('active');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('active'));
+            }
+        });
+
+        // ===== TOAST NOTIFICATION =====
+        function showToast(type, message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // Render toast notifications from TempData
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"].ToString()))');
+            });
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"].ToString()))');
+            });
+            </text>
+        }
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

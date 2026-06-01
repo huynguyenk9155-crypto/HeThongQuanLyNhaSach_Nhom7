@@ -8,41 +8,41 @@ namespace Tuan6.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class ProductController : Controller
+    public class BookController : Controller
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IBookRepository _bookRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(
-            IProductRepository productRepository,
+        public BookController(
+            IBookRepository bookRepository,
             ICategoryRepository categoryRepository,
             IWebHostEnvironment webHostEnvironment)
         {
-            _productRepository = productRepository;
+            _bookRepository = bookRepository;
             _categoryRepository = categoryRepository;
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: /Admin/Product
+        // GET: /Admin/Book
         public async Task<IActionResult> Index()
         {
-            var products = await _productRepository.GetAllAsync();
-            return View(products);
+            var books = await _bookRepository.GetAllAsync();
+            return View(books);
         }
 
-        // GET: /Admin/Product/Details/5
+        // GET: /Admin/Book/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            var book = await _bookRepository.GetByIdAsync(id);
+            if (book == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(book);
         }
 
-        // GET: /Admin/Product/Create
+        // GET: /Admin/Book/Create
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryRepository.GetAllAsync();
@@ -50,82 +50,96 @@ namespace Tuan6.Areas.Admin.Controllers
             return View();
         }
 
-        // POST: /Admin/Product/Create
+        // POST: /Admin/Book/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Product product, IFormFile? imageFile)
+        public async Task<IActionResult> Create(Book book, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
             {
                 if (imageFile != null)
                 {
-                    product.ImageUrl = await SaveImage(imageFile);
+                    book.ImageUrl = await SaveImage(imageFile);
                 }
-                await _productRepository.AddAsync(product);
+                await _bookRepository.AddAsync(book);
                 return RedirectToAction(nameof(Index));
             }
 
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "Id", "Name", product.CategoryId);
-            return View(product);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+            return View(book);
         }
 
-        // GET: /Admin/Product/Edit/5
+        // GET: /Admin/Book/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            var book = await _bookRepository.GetByIdAsync(id);
+            if (book == null)
             {
                 return NotFound();
             }
 
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "Id", "Name", product.CategoryId);
-            return View(product);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+            return View(book);
         }
 
-        // POST: /Admin/Product/Edit/5
+        // POST: /Admin/Book/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Product product, IFormFile? imageFile)
+        public async Task<IActionResult> Edit(int id, Book book, IFormFile? imageFile)
         {
-            if (id != product.Id)
+            if (id != book.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var dbBook = await _bookRepository.GetByIdAsync(id);
+                if (dbBook == null)
+                {
+                    return NotFound();
+                }
+
+                dbBook.Title = book.Title;
+                dbBook.Author = book.Author;
+                dbBook.Price = book.Price;
+                dbBook.Description = book.Description;
+                dbBook.StockQuantity = book.StockQuantity;
+                dbBook.CategoryId = book.CategoryId;
+
                 if (imageFile != null)
                 {
-                    product.ImageUrl = await SaveImage(imageFile);
+                    dbBook.ImageUrl = await SaveImage(imageFile);
                 }
-                await _productRepository.UpdateAsync(product);
+
+                await _bookRepository.UpdateAsync(dbBook);
                 return RedirectToAction(nameof(Index));
             }
 
             var categories = await _categoryRepository.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "Id", "Name", product.CategoryId);
-            return View(product);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+            return View(book);
         }
 
-        // GET: /Admin/Product/Delete/5
+        // GET: /Admin/Book/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            var book = await _bookRepository.GetByIdAsync(id);
+            if (book == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(book);
         }
 
-        // POST: /Admin/Product/Delete/5
+        // POST: /Admin/Book/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _productRepository.DeleteAsync(id);
+            await _bookRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

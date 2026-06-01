@@ -1,0 +1,106 @@
+@model IEnumerable<Tuan6.Models.CartItem>
+@{
+    ViewData["Title"] = "Giỏ hàng của bạn";
+    var totalAmount = Model.Sum(i => i.TotalPrice);
+}
+
+<main class="user-main">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">
+        🛒 Giỏ hàng của bạn 
+        <span style="font-size: 16px; color: var(--gray-600); font-weight: 400;">
+            (@Model.Sum(i => i.Quantity) sản phẩm)
+        </span>
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 48px; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow);">
+            <div style="font-size: 64px; margin-bottom: 16px;">🛒</div>
+            <h3>Giỏ hàng của bạn đang trống!</h3>
+            <p style="color: var(--gray-600); margin: 12px 0 24px;">Hãy quay lại trang chủ và khám phá hàng ngàn đầu sách hấp dẫn.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Quay lại mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout">
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h3>Sản phẩm trong giỏ</h3>
+                    <form asp-action="ClearCart" method="post" style="margin: 0;">
+                        <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger);">🗑 Xóa tất cả</button>
+                    </form>
+                </div>
+
+                @foreach (var item in Model)
+                {
+                    <div class="cart-item">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" class="item-cover" style="object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="item-cover">📕</div>
+                        }
+
+                        <div class="item-details">
+                            <div class="item-title">@item.Title</div>
+                            <div class="item-author">@item.Author</div>
+                            <div class="item-price">@item.Price.ToString("N0")đ</div>
+                        </div>
+
+                        <div class="item-quantity">
+                            <form asp-action="UpdateQuantity" method="post" style="display: flex; align-items: center; margin: 0; padding: 0;">
+                                <input type="hidden" name="bookId" value="@item.BookId" />
+                                <button type="submit" name="quantity" value="@(item.Quantity - 1)">−</button>
+                                <span>@item.Quantity</span>
+                                <button type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
+                            </form>
+                        </div>
+
+                        <a asp-action="RemoveFromCart" asp-route-bookId="@item.BookId" class="item-remove">✕</a>
+                    </div>
+                }
+
+                <div style="padding: 16px 24px;">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline btn-sm">← Tiếp tục mua sắm</a>
+                </div>
+            </div>
+
+            <div class="cart-summary">
+                <h4>📋 Tổng đơn hàng</h4>
+
+                <div class="promo-code">
+                    <input type="text" placeholder="Mã giảm giá">
+                    <button class="btn btn-primary btn-sm">Áp dụng</button>
+                </div>
+
+                <div class="summary-row">
+                    <span class="label">Tạm tính (@Model.Sum(i => i.Quantity) sản phẩm)</span>
+                    <span class="value">@totalAmount.ToString("N0")đ</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Giảm giá</span>
+                    <span class="value" style="color: var(--success);">0đ</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Phí vận chuyển</span>
+                    <span class="value" style="color: var(--success);">Miễn phí</span>
+                </div>
+                <div class="summary-row total">
+                    <span class="label">Tổng cộng</span>
+                    <span class="value">@totalAmount.ToString("N0")đ</span>
+                </div>
+
+                <a asp-action="Checkout" class="btn btn-success btn-full btn-lg" style="text-align: center; display: block;">
+                    💳 Thanh toán
+                </a>
+
+                <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 12px;">
+                    🔒 Thanh toán an toàn & bảo mật
+                </p>
+            </div>
+        </div>
+    }
+</main>

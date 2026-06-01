@@ -1,0 +1,139 @@
+@model Tuan6.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.Id.ToString("D4");
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>📦 Chi tiết đơn hàng #DH-@Model.Id.ToString("D4")</h2>
+        <p>Quản lý trạng thái và xem thông tin chi tiết giao nhận</p>
+    </div>
+    <div class="header-right">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">↩ Quay lại danh sách</a>
+    </div>
+</header>
+
+<div class="admin-content">
+    <div class="cart-layout">
+        <!-- Thông tin giao hàng & sản phẩm -->
+        <div class="cart-items" style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gray-800);">
+                    👤 Thông tin giao nhận hàng
+                </h3>
+                <div style="background: var(--gray-100); padding: 16px; border-radius: var(--radius); font-size: 14px; line-height: 1.8;">
+                    <div><strong>Tên khách hàng:</strong> @Model.FullName</div>
+                    <div><strong>Số điện thoại:</strong> @Model.PhoneNumber</div>
+                    <div><strong>Địa chỉ nhận hàng:</strong> @Model.Address</div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div><strong>Ghi chú từ khách:</strong> @Model.Notes</div>
+                    }
+                </div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gray-800);">
+                    📚 Sách đã đặt hàng
+                </h3>
+                <table class="orders-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Sách</th>
+                            <th style="text-align: right;">Đơn giá</th>
+                            <th style="text-align: center;">Số lượng</th>
+                            <th style="text-align: right;">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.OrderDetails != null)
+                        {
+                            foreach (var detail in Model.OrderDetails)
+                            {
+                                var subTotal = detail.Price * detail.Quantity;
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div style="font-size: 20px; width: 36px; height: 48px; background: var(--gray-200); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                @if (!string.IsNullOrEmpty(detail.Book?.ImageUrl))
+                                                {
+                                                    <img src="@detail.Book.ImageUrl" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);" />
+                                                }
+                                                else
+                                                {
+                                                    <text>📕</text>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 600;">@detail.Book?.Title</div>
+                                                <div style="font-size: 12px; color: var(--gray-500);">@detail.Book?.Author</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: right;">@detail.Price.ToString("N0")đ</td>
+                                    <td style="text-align: center;">@detail.Quantity</td>
+                                    <td style="text-align: right; font-weight: 700; color: var(--danger);">@subTotal.ToString("N0")đ</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tóm tắt & Cập nhật trạng thái -->
+        <div class="cart-summary">
+            <h4>📋 Tóm tắt đơn hàng</h4>
+
+            <div class="summary-row">
+                <span class="label">Ngày đặt hàng</span>
+                <span class="value">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="summary-row">
+                <span class="label">Trạng thái hiện tại</span>
+                <span class="value">
+                    @if (Model.Status == "Pending")
+                    {
+                        <span class="status-badge pending">Chờ xác nhận</span>
+                    }
+                    else if (Model.Status == "Shipping")
+                    {
+                        <span class="status-badge shipping">Đang giao</span>
+                    }
+                    else if (Model.Status == "Completed")
+                    {
+                        <span class="status-badge completed">Hoàn thành</span>
+                    }
+                    else if (Model.Status == "Cancelled")
+                    {
+                        <span class="status-badge cancelled">Đã hủy</span>
+                    }
+                </span>
+            </div>
+            <div class="summary-row total" style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--gray-200);">
+                <span class="label">Tổng cộng</span>
+                <span class="value" style="color: var(--danger); font-size: 18px; font-weight: 800;">@Model.TotalAmount.ToString("N0")đ</span>
+            </div>
+
+            <!-- Panel Cập nhật trạng thái -->
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--gray-200);">
+                <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--gray-750);">⚙️ Cập nhật trạng thái đơn hàng</h4>
+                <form asp-action="UpdateStatus" method="post" style="display: flex; flex-direction: column; gap: 12px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    
+                    <select name="status" style="width: 100%; padding: 10px 12px; border: 2px solid var(--gray-300); border-radius: var(--radius); outline: none; font-size: 14px;">
+                        <option value="Pending" selected="@(Model.Status == "Pending")">⏸ Chờ xác nhận (Pending)</option>
+                        <option value="Shipping" selected="@(Model.Status == "Shipping")">🚚 Đang giao (Shipping)</option>
+                        <option value="Completed" selected="@(Model.Status == "Completed")">✅ Hoàn thành (Completed)</option>
+                        <option value="Cancelled" selected="@(Model.Status == "Cancelled")">❌ Hủy đơn hàng (Cancelled)</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary btn-full" style="justify-content: center;">
+                        💾 Cập nhật
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

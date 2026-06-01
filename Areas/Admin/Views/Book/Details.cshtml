@@ -1,0 +1,61 @@
+@model Tuan6.Models.Book
+@{
+    ViewData["Title"] = "Chi tiết sách";
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>👁️ Chi tiết sách</h2>
+        <p>Xem thông tin chi tiết đầu sách trong hệ thống</p>
+    </div>
+    <div class="header-right">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">✏️ Chỉnh sửa</a>
+        <a asp-action="Index" class="btn btn-secondary btn-sm">↩ Quay lại</a>
+    </div>
+</header>
+
+<div class="admin-content">
+    <div class="data-table-card" style="padding: 32px; max-width: 800px; margin: 0 auto; display: flex; gap: 32px;">
+        <div style="width: 200px; height: 280px; background: var(--gray-200); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: var(--shadow); flex-shrink: 0;">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" style="width: 100%; height: 100%; object-fit: cover;" />
+            }
+            else
+            {
+                <span style="font-size: 64px;">📕</span>
+            }
+        </div>
+        <div style="flex: 1; line-height: 2;">
+            <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">@Model.Title</h2>
+            <div style="font-size: 16px; color: var(--gray-600); margin-bottom: 16px;">Tác giả: <strong>@Model.Author</strong></div>
+
+            <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 14px;">
+                <div><strong>Thể loại:</strong> @(Model.Category?.Name ?? "N/A")</div>
+                <div><strong>Giá bán:</strong> <strong style="color: var(--danger); font-size: 16px;">@Model.Price.ToString("N0")đ</strong></div>
+                <div>
+                    <strong>Tình trạng:</strong>
+                    @if (Model.StockQuantity == 0)
+                    {
+                        <span class="status-badge cancelled">Hết hàng</span>
+                    }
+                    else if (Model.StockQuantity < 10)
+                    {
+                        <span class="status-badge pending">Sắp hết (Còn @Model.StockQuantity)</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge completed">Còn hàng (Còn @Model.StockQuantity)</span>
+                    }
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                <h4 style="margin-bottom: 8px;">Mô tả sách:</h4>
+                <p style="font-size: 14px; color: var(--gray-750); line-height: 1.6; text-align: justify;">
+                    @(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả cho cuốn sách này." : Model.Description)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

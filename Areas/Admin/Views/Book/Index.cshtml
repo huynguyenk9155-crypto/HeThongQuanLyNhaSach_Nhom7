@@ -1,0 +1,132 @@
+@model IEnumerable<Tuan6.Models.Book>
+@{
+    ViewData["Title"] = "Quản lý sách";
+}
+
+<header class="admin-header">
+    <div class="page-title">
+        <h2>📚 Quản lý sách</h2>
+        <p>Quản lý danh mục sách trong hệ thống</p>
+    </div>
+    <div class="header-right">
+        <a asp-action="Create" class="btn btn-primary btn-sm">➕ Thêm sách mới</a>
+    </div>
+</header>
+
+<div class="admin-content">
+    <div class="data-table-card">
+        <div class="data-table-header">
+            <h4>Danh sách sách (@Model.Count())</h4>
+            <div class="data-table-actions">
+                <input type="text" id="adminBookSearch" placeholder="🔍 Tìm kiếm sách...">
+                <select id="categoryFilter" onchange="filterByCategory()" style="padding: 8px 12px; border: 2px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 13px;">
+                    <option value="">Tất cả thể loại</option>
+                    @foreach (var cat in Model.Select(b => b.Category?.Name).Distinct().Where(name => name != null))
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <table class="data-table" id="booksTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px;"><input type="checkbox"></th>
+                    <th>Thông tin sách</th>
+                    <th>Giá</th>
+                    <th>Tồn kho</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="book-row" data-category="@(item.Category?.Name ?? "")">
+                            <td><input type="checkbox"></td>
+                            <td>
+                                <div class="book-info-cell">
+                                    <div class="book-thumb">
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);" />
+                                        }
+                                        else
+                                        {
+                                            <text>📕</text>
+                                        }
+                                    </div>
+                                    <div>
+                                        <div class="book-name">@item.Title</div>
+                                        <div class="book-cat">@(item.Category?.Name ?? "N/A") • @item.Author</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><strong>@item.Price.ToString("N0")đ</strong></td>
+                            <td>
+                                @if (item.StockQuantity == 0)
+                                {
+                                    <span class="status-badge cancelled">Hết hàng</span>
+                                }
+                                else if (item.StockQuantity < 10)
+                                {
+                                    <span class="status-badge pending">Sắp hết (@item.StockQuantity)</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge completed">Còn hàng (@item.StockQuantity)</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="Xem">👁</a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Sửa">✏️</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="action-btn delete" title="Xóa">🗑</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--gray-500); padding: 32px;">Không có sách nào. Hãy tạo mới.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Client-side search and category filtering
+        document.getElementById('adminBookSearch').addEventListener('input', function() {
+            var val = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('.book-row');
+            rows.forEach(function(row) {
+                var title = row.querySelector('.book-name').textContent.toLowerCase();
+                var authorCat = row.querySelector('.book-cat').textContent.toLowerCase();
+                if (title.indexOf(val) > -1 || authorCat.indexOf(val) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        function filterByCategory() {
+            var selectedCat = document.getElementById('categoryFilter').value;
+            var rows = document.querySelectorAll('.book-row');
+            rows.forEach(function(row) {
+                var rowCat = row.getAttribute('data-category');
+                if (selectedCat === "" || rowCat === selectedCat) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}
