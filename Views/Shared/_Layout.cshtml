@@ -3,6 +3,41 @@
 @using Tuan6.Helpers
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+
+@functions {
+    public class HeaderNotification
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Link { get; set; } = string.Empty;
+        public string TimeAgo { get; set; } = string.Empty;
+    }
+
+    public string GetTimeAgo(DateTime dateTime)
+    {
+        var span = DateTime.Now - dateTime;
+        if (span.TotalDays > 365) return $"{(int)Math.Floor(span.TotalDays / 365)} năm trước";
+        if (span.TotalDays > 30) return $"{(int)Math.Floor(span.TotalDays / 30)} tháng trước";
+        if (span.TotalDays > 7) return $"{(int)Math.Floor(span.TotalDays / 7)} tuần trước";
+        if (span.TotalDays >= 1) return $"{(int)Math.Floor(span.TotalDays)} ngày trước";
+        if (span.TotalHours >= 1) return $"{(int)Math.Floor(span.TotalHours)} giờ trước";
+        if (span.TotalMinutes >= 1) return $"{(int)Math.Floor(span.TotalMinutes)} phút trước";
+        return "Vừa xong";
+    }
+
+    public string TranslateStatus(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Chờ xác nhận",
+            "Processing" => "Đang xử lý",
+            "Shipping" => "Đang giao hàng",
+            "Completed" => "Đã hoàn thành",
+            "Cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
+}
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -28,10 +63,134 @@
             </form>
 
             <div class="header-actions">
-                <button class="header-btn" title="Thông báo">
-                    🔔
-                    <span class="badge">3</span>
-                </button>
+                @{
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    var wishlistKey = string.IsNullOrEmpty(userId) ? "Wishlist" : $"Wishlist_{userId}";
+                    var wishlist = Context.Session.GetObjectFromJson<List<WishlistItem>>(wishlistKey) ?? new List<WishlistItem>();
+                    var wishlistCount = wishlist.Count;
+                }
+                <a class="header-btn" asp-area="" asp-controller="Wishlist" asp-action="Index" title="Danh sách yêu thích" id="wishlistHeaderBtn">
+                    ❤️
+                    @if (wishlistCount > 0)
+                    {
+                        <span class="badge">@wishlistCount</span>
+                    }
+                </a>
+
+                @{
+                    var notifications = new List<HeaderNotification>();
+                    int notificationCount = 0;
+
+                    if (SignInManager.IsSignedIn(User))
+                    {
+                        var currentUser = await UserManager.GetUserAsync(User);
+                        if (currentUser != null)
+                        {
+                            var isAdmin = await UserManager.IsInRoleAsync(currentUser, "Admin");
+                            if (isAdmin)
+                            {
+                                // Admin notifications: Pending orders
+                                var pendingOrders = DbContext.Orders
+                                    .Where(o => o.Status == "Pending")
+                                    .OrderByDescending(o => o.OrderDate)
+                                    .Take(5)
+                                    .ToList();
+
+                                notificationCount = pendingOrders.Count;
+
+                                foreach (var order in pendingOrders)
+                                {
+                                    notifications.Add(new HeaderNotification
+                                    {
+                                        Title = $"🛒 Đơn hàng mới từ {order.FullName} (#{order.Id})",
+                                        Link = Url.Action("Details", "Order", new { area = "Admin", id = order.Id }) ?? "#",
+                                        TimeAgo = GetTimeAgo(order.OrderDate)
+                                    });
+                                }
+                                
+                                // Fallback: if no pending, show latest orders as info
+                                if (!notifications.Any())
+                                {
+                                    var recentOrders = DbContext.Orders
+                                        .OrderByDescending(o => o.OrderDate)
+                                        .Take(5)
+                                        .ToList();
+
+                                    foreach (var order in recentOrders)
+                                    {
+                                        notifications.Add(new HeaderNotification
+                                        {
+                                            Title = $"📦 Đơn hàng của {order.FullName} (#{order.Id}) - {TranslateStatus(order.Status)}",
+                                            Link = Url.Action("Details", "Order", new { area = "Admin", id = order.Id }) ?? "#",
+                                            TimeAgo = GetTimeAgo(order.OrderDate)
+                                        });
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Customer notifications: status changes of their orders
+                                var customerOrders = DbContext.Orders
+                                    .Where(o => o.UserId == currentUser.Id)
+                                    .OrderByDescending(o => o.OrderDate)
+                                    .Take(5)
+                                    .ToList();
+
+                                notificationCount = customerOrders.Count(o => o.Status == "Pending" || o.Status == "Shipping" || o.Status == "Processing");
+
+                                foreach (var order in customerOrders)
+                                {
+                                    notifications.Add(new HeaderNotification
+                                    {
+                                        Title = $"📦 Đơn hàng #{order.Id} đang ở trạng thái: {TranslateStatus(order.Status)}",
+                                        Link = Url.Action("Details", "Order", new { id = order.Id }) ?? "#",
+                                        TimeAgo = GetTimeAgo(order.OrderDate)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                <div class="dropdown">
+                    <button class="header-btn" onclick="toggleDropdown('notificationDropdown')" title="Thông báo">
+                        🔔
+                        @if (notificationCount > 0)
+                        {
+                            <span class="badge">@notificationCount</span>
+                        }
+                    </button>
+                    <div class="dropdown-menu" id="notificationDropdown" style="width: 320px; padding: 8px 0; right: 0;">
+                        <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; color: var(--dark);">
+                            <span>🔔 Thông báo</span>
+                            @if (notificationCount > 0)
+                            {
+                                <span style="background: var(--danger); color: white; font-size: 11px; padding: 2px 6px; border-radius: 10px;">@notificationCount mới</span>
+                            }
+                        </div>
+                        <div style="max-height: 280px; overflow-y: auto;">
+                            @if (!notifications.Any())
+                            {
+                                <div style="padding: 24px; text-align: center; color: var(--gray-500); font-size: 14px;">
+                                    Không có thông báo mới nào.
+                                </div>
+                            }
+                            else
+                            {
+                                foreach (var notif in notifications)
+                                {
+                                    <a href="@notif.Link" style="display: block; padding: 12px 16px; border-bottom: 1px solid var(--gray-100); transition: var(--transition); text-align: left;" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='transparent'">
+                                        <div style="font-weight: 600; font-size: 13px; color: var(--dark); line-height: 1.3; margin-bottom: 4px;">
+                                            @notif.Title
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--gray-500);">
+                                            @notif.TimeAgo
+                                        </div>
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
                 
                 @{
                     var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
@@ -90,7 +249,7 @@
         </div>
         <nav class="user-nav">
             <a asp-area="" asp-controller="Home" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">🏠 Trang chủ</a>
-            <a asp-area="" asp-controller="Home" asp-action="Index">📖 Danh mục</a>
+            <a asp-area="" asp-controller="Home" asp-action="Categories" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Categories" ? "active" : "")">📖 Danh mục</a>
             <a asp-area="" asp-controller="Order" asp-action="History" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Order" ? "active" : "")">📦 Đơn hàng</a>
         </nav>
     </header>

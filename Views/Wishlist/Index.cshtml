@@ -1,0 +1,71 @@
+@model IEnumerable<Tuan6.Models.WishlistItem>
+@{
+    ViewData["Title"] = "Danh sách yêu thích";
+}
+
+<main class="user-main">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">
+        ❤️ Danh sách yêu thích 
+        <span style="font-size: 16px; color: var(--gray-600); font-weight: 400;">
+            (@Model.Count() sản phẩm)
+        </span>
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 48px; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow);">
+            <div style="font-size: 64px; margin-bottom: 16px;">❤️</div>
+            <h3>Danh sách yêu thích của bạn đang trống!</h3>
+            <p style="color: var(--gray-600); margin: 12px 0 24px;">Hãy duyệt qua cửa hàng để tìm những cuốn sách yêu thích của bạn.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Khám phá ngay</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout" style="grid-template-columns: 1fr;">
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h3>Sản phẩm yêu thích</h3>
+                </div>
+
+                @foreach (var item in Model)
+                {
+                    <div class="cart-item" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="@item.Title" class="item-cover" style="object-fit: contain; padding: 4px; background: #f8f9fa;" />
+                            }
+                            else
+                            {
+                                <div class="item-cover">📕</div>
+                            }
+
+                            <div class="item-details">
+                                <div class="item-title">@item.Title</div>
+                                <div class="item-author">@item.Author</div>
+                                <div class="item-price">@item.Price.ToString("N0")đ</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post" style="margin: 0;">
+                                <input type="hidden" name="bookId" value="@item.BookId" />
+                                <button type="submit" class="btn btn-primary btn-sm">🛒 Thêm vào giỏ</button>
+                            </form>
+
+                            <form asp-controller="Wishlist" asp-action="RemoveFromWishlist" method="post" style="margin: 0;">
+                                <input type="hidden" name="bookId" value="@item.BookId" />
+                                <button type="submit" class="item-remove" style="border: none; background: transparent; cursor: pointer;">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <div style="padding: 16px 24px;">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline btn-sm">← Tiếp tục mua sắm</a>
+                </div>
+            </div>
+        </div>
+    }
+</main>

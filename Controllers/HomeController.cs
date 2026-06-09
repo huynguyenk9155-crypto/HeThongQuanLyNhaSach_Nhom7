@@ -77,6 +77,13 @@ namespace Tuan6.Controllers
             return View(book);
         }
 
+        // GET: /Home/Categories
+        public async Task<IActionResult> Categories()
+        {
+            var categories = await _categoryRepository.GetAllAsync();
+            return View(categories);
+        }
+
         public IActionResult Privacy()
         {
             return View();

@@ -14,7 +14,7 @@ namespace Tuan6.Repositories
 
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories.Include(c => c.Books).ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)

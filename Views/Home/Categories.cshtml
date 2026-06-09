@@ -1,0 +1,90 @@
+@model IEnumerable<Tuan6.Models.Category>
+@{
+    ViewData["Title"] = "Danh mục thể loại";
+    
+    var categoryMetadata = new Dictionary<string, (string Icon, string Color, string Description)>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Văn học", ("📚", "linear-gradient(135deg, #FF6B6B, #FF8E53)", "Những tác phẩm văn học kinh điển, tiểu thuyết và truyện ngắn sâu sắc.") },
+        { "Kinh tế", ("📈", "linear-gradient(135deg, #4FACFE, #00F2FE)", "Sách quản trị, khởi nghiệp, tài chính và phân tích thị trường kinh tế.") },
+        { "Khoa học", ("🔬", "linear-gradient(135deg, #43E97B, #38F9D7)", "Khám phá vũ trụ, tự nhiên, sinh học và các nghiên cứu khoa học.") },
+        { "Kỹ năng sống", ("🌱", "linear-gradient(135deg, #11998e, #38ef7d)", "Phát triển bản thân, xây dựng thói quen tốt và tư duy tích cực.") },
+        { "Lịch sử", ("📜", "linear-gradient(135deg, #FAD961, #F76B1C)", "Tìm hiểu cội nguồn dân tộc và dòng chảy lịch sử thế giới qua các thời kỳ.") },
+        { "Thiếu nhi", ("🧸", "linear-gradient(135deg, #FF9A9E, #FECFEF)", "Truyện cổ tích, truyện tranh và sách giáo dục ý nghĩa dành cho trẻ em.") },
+        { "Ngoại ngữ", ("🗣️", "linear-gradient(135deg, #30CFD0, #330867)", "Tài liệu học tiếng Anh, tiếng Nhật, tiếng Trung và các ngôn ngữ phổ biến.") },
+        { "Tâm lý học", ("🧠", "linear-gradient(135deg, #a18cd1, #fbc2eb)", "Giải mã hành vi con người, tâm lý đám đông và cảm xúc nội tâm.") },
+        { "Công nghệ", ("💻", "linear-gradient(135deg, #243B55, #141E30)", "Kiến thức lập trình, trí tuệ nhân tạo, thiết kế hệ thống và tin học.") },
+        { "Nghệ thuật", ("🎨", "linear-gradient(135deg, #f093fb, #f5576c)", "Hội họa, âm nhạc, kiến trúc và nghệ thuật thị giác đương đại.") }
+    };
+}
+
+<main class="user-main" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    <!-- Section Header -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #1a73e8, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; display: inline-block;">
+            📂 Khám Phá Thể Loại Sách
+        </h1>
+        <p style="color: var(--gray-600); font-size: 16px; max-width: 600px; margin: 0 auto;">
+            Tìm kiếm những cuốn sách hay nhất theo từng chủ đề yêu thích của bạn. Cập nhật liên tục những tác phẩm mới và đặc sắc.
+        </p>
+    </div>
+
+    <!-- Categories Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+        @foreach (var cat in Model)
+        {
+            var metaExists = categoryMetadata.TryGetValue(cat.Name, out var meta);
+            var icon = metaExists ? meta.Icon : "📖";
+            var gradient = metaExists ? meta.Color : "linear-gradient(135deg, #84fab0, #8fd3f4)";
+            var desc = metaExists ? meta.Description : "Khám phá kho tàng tri thức với các đầu sách chọn lọc.";
+            var bookCount = cat.Books?.Count ?? 0;
+
+            <a asp-action="Index" asp-route-categoryId="@cat.Id" class="category-card" style="display: flex; flex-direction: column; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow); border: 1px solid var(--gray-200); padding: 24px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; cursor: pointer;">
+                <!-- Card Gradient Header accent -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: @gradient;"></div>
+                
+                <!-- Icon and Count Badge -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <div style="width: 56px; height: 56px; border-radius: var(--radius); background: @gradient; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease;" class="category-icon-wrapper">
+                        @icon
+                    </div>
+                    <span style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(26,115,232,0.1);">
+                        @bookCount cuốn
+                    </span>
+                </div>
+
+                <!-- Text Info -->
+                <div style="flex: 1;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 10px; transition: color 0.2s ease;">
+                        @cat.Name
+                    </h3>
+                    <p style="color: var(--gray-600); font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                        @desc
+                    </p>
+                </div>
+
+                <!-- Action Button link footer -->
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--primary); transition: gap 0.2s ease;" class="category-action-link">
+                    <span>Xem sách cùng danh mục</span>
+                    <span>→</span>
+                </div>
+            </a>
+        }
+    </div>
+</main>
+
+<style>
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(26,115,232,0.3);
+    }
+    .category-card:hover h3 {
+        color: var(--primary);
+    }
+    .category-card:hover .category-icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
+    .category-card:hover .category-action-link {
+        gap: 12px;
+    }
+</style>

@@ -1,10 +1,29 @@
 @model IEnumerable<Tuan6.Models.Book>
+@using Tuan6.Helpers
+@using Tuan6.Models
 @{
     ViewData["Title"] = "Trang chủ";
     var categories = ViewBag.Categories as IEnumerable<Tuan6.Models.Category> ?? new List<Category>();
     var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
     var pageNumber = ViewBag.PageNumber as int? ?? 1;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var wishlistKey = string.IsNullOrEmpty(userId) ? "Wishlist" : $"Wishlist_{userId}";
+    var wishlist = Context.Session.GetObjectFromJson<List<WishlistItem>>(wishlistKey) ?? new List<WishlistItem>();
+
+    var categoryIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Văn học", "📚" },
+        { "Kinh tế", "📈" },
+        { "Khoa học", "🔬" },
+        { "Kỹ năng sống", "🌱" },
+        { "Lịch sử", "📜" },
+        { "Thiếu nhi", "🧸" },
+        { "Ngoại ngữ", "🗣️" },
+        { "Tâm lý học", "🧠" },
+        { "Công nghệ", "💻" },
+        { "Nghệ thuật", "🎨" }
+    };
 }
 
 <main class="user-main">
@@ -47,9 +66,10 @@
 
                 @foreach (var cat in categories)
                 {
+                    var icon = categoryIcons.TryGetValue(cat.Name, out var emoji) ? emoji : "📖";
                     <a asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-searchString="@ViewBag.SearchString"
                        style="display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 8px 12px; border-radius: var(--radius-sm); color: @(selectedCategoryId == cat.Id ? "var(--primary)" : "var(--gray-700)"); background: @(selectedCategoryId == cat.Id ? "var(--primary-light)" : "transparent"); font-weight: @(selectedCategoryId == cat.Id ? "bold" : "normal");">
-                        📖 @cat.Name
+                        @icon @cat.Name
                     </a>
                 }
             </div>
@@ -66,7 +86,7 @@
                             <div class="book-cover">
                                 @if (!string.IsNullOrEmpty(book.ImageUrl))
                                 {
-                                    <img src="@book.ImageUrl" alt="@book.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                                    <img src="@book.ImageUrl" alt="@book.Title" style="width: 100%; height: 100%; object-fit: contain;" />
                                 }
                                 else
                                 {
@@ -82,7 +102,12 @@
                                     <span class="book-badge" style="background: var(--warning); color: black;">Sắp hết</span>
                                 }
 
-                                <button class="book-wishlist" type="button">♡</button>
+                                @{
+                                    var isInWishlist = wishlist.Any(w => w.BookId == book.Id);
+                                }
+                                <button class="book-wishlist" type="button" onclick="toggleWishlist(@book.Id, this)" style="color: @(isInWishlist ? "var(--danger)" : "inherit");">
+                                    @(isInWishlist ? "❤️" : "♡")
+                                </button>
                             </div>
                             <div class="book-info">
                                 <div class="book-title" title="@book.Title">@book.Title</div>
@@ -151,3 +176,55 @@
         </div>
     </div>
 </main>
+
+@section Scripts {
+    <script>
+        function toggleWishlist(bookId, btn) {
+            fetch('/Wishlist/Toggle?bookId=' + bookId, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    if (data.added) {
+                        btn.innerHTML = '❤️';
+                        btn.style.color = 'var(--danger)';
+                        showToast('success', data.message);
+                    } else {
+                        btn.innerHTML = '♡';
+                        btn.style.color = 'inherit';
+                        showToast('info', data.message);
+                    }
+                    
+                    // Update header badge count
+                    const headerBtn = document.getElementById('wishlistHeaderBtn');
+                    if (headerBtn) {
+                        let badge = headerBtn.querySelector('.badge');
+                        if (data.count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'badge';
+                                headerBtn.appendChild(badge);
+                            }
+                            badge.textContent = data.count;
+                        } else {
+                            if (badge) {
+                                badge.remove();
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Có lỗi xảy ra. Vui lòng thử lại.');
+            });
+        }
+    </script>
+}

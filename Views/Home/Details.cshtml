@@ -10,7 +10,7 @@
         <span>@Model.Title</span>
     </div>
 
-    <div class="cart-layout" style="background: white; padding: 32px; border-radius: var(--radius-md); box-shadow: var(--shadow);">
+    <div class="details-layout" style="background: white; padding: 32px; border-radius: var(--radius-md); box-shadow: var(--shadow);">
         <!-- Bìa sách bên trái -->
         <div style="display: flex; justify-content: center; background: var(--gray-100); padding: 24px; border-radius: var(--radius-md); max-height: 480px; align-items: center; overflow: hidden; box-shadow: var(--shadow-sm);">
             @if (!string.IsNullOrEmpty(Model.ImageUrl))
@@ -55,27 +55,29 @@
                 </p>
             </div>
 
-            <div style="display: flex; gap: 16px; align-items: center; border-top: 2px solid var(--gray-200); padding-top: 24px;">
-                <a asp-action="Index" class="btn btn-outline btn-lg" style="justify-content: center;">← Quay lại cửa hàng</a>
+            <div style="display: flex; gap: 16px; align-items: center; border-top: 2px solid var(--gray-200); padding-top: 24px; flex-wrap: wrap;">
+                <a asp-action="Index" class="btn btn-outline" style="height: 48px; min-width: 180px; justify-content: center;">← Quay lại cửa hàng</a>
+                
                 @if (Model.StockQuantity > 0)
                 {
-                    <form asp-controller="Cart" asp-action="AddToCart" method="post" style="display: flex; flex: 1;">
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 0;">
                         <input type="hidden" name="bookId" value="@Model.Id" />
                         
                         <!-- Số lượng mua -->
-                        <div style="display: flex; align-items: center; margin-right: 16px;">
-                            <span style="font-size: 14px; font-weight: bold; margin-right: 8px;">Số lượng:</span>
-                            <input type="number" name="quantity" value="1" min="1" max="@Model.StockQuantity" style="width: 70px; padding: 10px; border: 2px solid var(--gray-300); border-radius: var(--radius-sm); text-align: center; font-weight: bold;" />
+                        <div style="display: flex; align-items: center; border: 2px solid var(--gray-300); border-radius: var(--radius); overflow: hidden; height: 48px; background: white;">
+                            <button type="button" onclick="decrementQuantity()" style="width: 40px; height: 100%; background: var(--gray-100); font-size: 16px; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none;">−</button>
+                            <input type="number" id="purchaseQuantity" name="quantity" value="1" min="1" max="@Model.StockQuantity" readonly style="width: 50px; height: 100%; border: none; text-align: center; font-weight: bold; font-size: 15px; outline: none; background: white;" />
+                            <button type="button" onclick="incrementQuantity()" style="width: 40px; height: 100%; background: var(--gray-100); font-size: 16px; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none;">+</button>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg" style="flex: 1; justify-content: center;">
+                        <button type="submit" class="btn btn-primary" style="height: 48px; min-width: 220px; justify-content: center;">
                             🛒 Thêm vào giỏ hàng
                         </button>
                     </form>
                 }
                 else
                 {
-                    <button class="btn btn-secondary btn-lg" disabled style="flex: 1; justify-content: center; cursor: not-allowed; opacity: 0.6;">
+                    <button class="btn btn-secondary" disabled style="height: 48px; min-width: 220px; justify-content: center; cursor: not-allowed; opacity: 0.6;">
                         ❌ Hết hàng tạm thời
                     </button>
                 }
@@ -83,3 +85,27 @@
         </div>
     </div>
 </main>
+
+@section Scripts {
+    <script>
+        function decrementQuantity() {
+            const input = document.getElementById('purchaseQuantity');
+            if (input) {
+                let val = parseInt(input.value);
+                if (val > 1) {
+                    input.value = val - 1;
+                }
+            }
+        }
+        function incrementQuantity() {
+            const input = document.getElementById('purchaseQuantity');
+            if (input) {
+                let val = parseInt(input.value);
+                const max = parseInt(input.getAttribute('max')) || 1;
+                if (val < max) {
+                    input.value = val + 1;
+                }
+            }
+        }
+    </script>
+}
