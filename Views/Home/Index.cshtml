@@ -226,5 +226,94 @@
                 showToast('error', 'Có lỗi xảy ra. Vui lòng thử lại.');
             });
         }
+
+        // ===== AJAX Catalog Search & Filter =====
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.querySelector('.search-bar input[name="searchString"]');
+            const searchForm = document.querySelector('.search-bar');
+            const mainContent = document.querySelector('main.user-main');
+
+            if (!searchInput || !mainContent) return;
+
+            let searchTimeout;
+
+            // Helper to load content via AJAX
+            function loadCatalog(url, updateUrlInHistory = true) {
+                // Show loading indicator by dimming the main content
+                mainContent.style.opacity = '0.5';
+                mainContent.style.transition = 'opacity 0.2s ease';
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(htmlText => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlText, 'text/html');
+                        const newMainContent = doc.querySelector('main.user-main');
+
+                        if (newMainContent) {
+                            mainContent.innerHTML = newMainContent.innerHTML;
+                        }
+
+                        mainContent.style.opacity = '1';
+
+                        if (updateUrlInHistory) {
+                            history.pushState(null, '', url);
+                        }
+
+                        // Keep the search input value in sync with the URL parameter
+                        const currentUrl = new URL(url, window.location.origin);
+                        const searchParam = currentUrl.searchParams.get('searchString') || '';
+                        if (searchInput.value !== searchParam) {
+                            searchInput.value = searchParam;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('AJAX Load error:', error);
+                        mainContent.style.opacity = '1';
+                    });
+            }
+
+            // Intercept search input keyup/input event for real-time search
+            searchInput.addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const query = e.target.value;
+                    const url = new URL(window.location.href, window.location.origin);
+                    url.searchParams.set('searchString', query);
+                    url.searchParams.set('pageNumber', '1'); // Reset pagination on new search
+                    loadCatalog(url.toString());
+                }, 200); // 200ms debounce
+            });
+
+            // Intercept form submission to prevent full page reload
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                const query = searchInput.value;
+                const url = new URL(window.location.href, window.location.origin);
+                url.searchParams.set('searchString', query);
+                url.searchParams.set('pageNumber', '1');
+                loadCatalog(url.toString());
+            });
+
+            // Intercept category and pagination link clicks
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('.filter-sidebar a, .pagination a');
+                if (link) {
+                    e.preventDefault();
+                    loadCatalog(link.href);
+                }
+            });
+
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', function() {
+                loadCatalog(window.location.href, false);
+            });
+        });
     </script>
 }
