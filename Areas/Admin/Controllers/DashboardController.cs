@@ -93,6 +93,25 @@ namespace Tuan6.Areas.Admin.Controllers
                 .OrderByDescending(g => g.Count)
                 .ToList();
 
+            // Calculate Top 5 best selling books
+            var bestSellers = await _context.OrderDetails
+                .Include(od => od.Book)
+                .Where(od => od.Order!.Status == "Completed")
+                .GroupBy(od => new { od.BookId, od.Book!.Title, od.Book.Author, od.Book.Price, od.Book.ImageUrl })
+                .Select(g => new BestSellerViewModel
+                {
+                    BookId = g.Key.BookId,
+                    Title = g.Key.Title,
+                    Author = g.Key.Author,
+                    Price = g.Key.Price,
+                    ImageUrl = g.Key.ImageUrl,
+                    QuantitySold = g.Sum(od => od.Quantity),
+                    TotalRevenue = g.Sum(od => od.Quantity * od.Price)
+                })
+                .OrderByDescending(x => x.QuantitySold)
+                .Take(5)
+                .ToListAsync();
+
             ViewBag.TotalBooks = totalBooks;
             ViewBag.TotalRevenue = totalRevenue;
             ViewBag.TotalOrders = totalOrders;
@@ -102,6 +121,7 @@ namespace Tuan6.Areas.Admin.Controllers
             ViewBag.WeeklyLabels = weeklyLabels;
             ViewBag.WeeklyData = weeklyData;
             ViewBag.CategorySales = categorySales;
+            ViewBag.BestSellers = bestSellers;
 
             return View();
         }

@@ -224,6 +224,7 @@
                             <span>▾</span>
                         </button>
                         <div class="dropdown-menu" id="userDropdown">
+                            <a asp-area="" asp-controller="Account" asp-action="Profile">👤 Thông tin cá nhân</a>
                             <a asp-area="" asp-controller="Order" asp-action="History">📦 Đơn hàng của tôi</a>
                             @if (User.IsInRole("Admin"))
                             {
@@ -312,7 +313,7 @@
         {
             <text>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"]?.ToString() ?? ""))');
+                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"]!.ToString()))');
             });
             </text>
         }
@@ -320,7 +321,7 @@
         {
             <text>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"]?.ToString() ?? ""))');
+                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"]!.ToString()))');
             });
             </text>
         }

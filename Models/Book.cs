@@ -42,6 +42,20 @@ namespace Tuan6.Models
         [Display(Name = "Danh mục")]
         public Category? Category { get; set; }
 
+        [ForeignKey("AuthorRelation")]
+        [Display(Name = "Tác giả")]
+        public int? AuthorId { get; set; }
+
+        [Display(Name = "Thông tin tác giả")]
+        public Author? AuthorRelation { get; set; }
+
+        [ForeignKey("Publisher")]
+        [Display(Name = "Nhà xuất bản")]
+        public int? PublisherId { get; set; }
+
+        [Display(Name = "Thông tin nhà xuất bản")]
+        public Publisher? Publisher { get; set; }
+
         public List<BookImage>? Images { get; set; }
         
         public List<OrderDetail>? OrderDetails { get; set; }

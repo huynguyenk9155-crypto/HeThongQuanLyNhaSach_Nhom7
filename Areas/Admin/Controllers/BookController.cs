@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Tuan6.Models;
 using Tuan6.Repositories;
 
@@ -13,15 +14,18 @@ namespace Tuan6.Areas.Admin.Controllers
         private readonly IBookRepository _bookRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ApplicationDbContext _context;
 
         public BookController(
             IBookRepository bookRepository,
             ICategoryRepository categoryRepository,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            ApplicationDbContext context)
         {
             _bookRepository = bookRepository;
             _categoryRepository = categoryRepository;
             _webHostEnvironment = webHostEnvironment;
+            _context = context;
         }
 
         // GET: /Admin/Book
@@ -47,6 +51,13 @@ namespace Tuan6.Areas.Admin.Controllers
         {
             var categories = await _categoryRepository.GetAllAsync();
             ViewBag.Categories = new SelectList(categories, "Id", "Name");
+
+            var authors = await _context.Authors.OrderBy(a => a.Name).ToListAsync();
+            ViewBag.Authors = new SelectList(authors, "Id", "Name");
+
+            var publishers = await _context.Publishers.OrderBy(p => p.Name).ToListAsync();
+            ViewBag.Publishers = new SelectList(publishers, "Id", "Name");
+
             return View();
         }
 
@@ -55,6 +66,16 @@ namespace Tuan6.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Book book, IFormFile? imageFile)
         {
+            if (book.AuthorId.HasValue)
+            {
+                var author = await _context.Authors.FindAsync(book.AuthorId.Value);
+                if (author != null)
+                {
+                    book.Author = author.Name;
+                    ModelState.Remove("Author");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 if (imageFile != null)
@@ -67,6 +88,13 @@ namespace Tuan6.Areas.Admin.Controllers
 
             var categories = await _categoryRepository.GetAllAsync();
             ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+
+            var authors = await _context.Authors.OrderBy(a => a.Name).ToListAsync();
+            ViewBag.Authors = new SelectList(authors, "Id", "Name", book.AuthorId);
+
+            var publishers = await _context.Publishers.OrderBy(p => p.Name).ToListAsync();
+            ViewBag.Publishers = new SelectList(publishers, "Id", "Name", book.PublisherId);
+
             return View(book);
         }
 
@@ -81,6 +109,13 @@ namespace Tuan6.Areas.Admin.Controllers
 
             var categories = await _categoryRepository.GetAllAsync();
             ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+
+            var authors = await _context.Authors.OrderBy(a => a.Name).ToListAsync();
+            ViewBag.Authors = new SelectList(authors, "Id", "Name", book.AuthorId);
+
+            var publishers = await _context.Publishers.OrderBy(p => p.Name).ToListAsync();
+            ViewBag.Publishers = new SelectList(publishers, "Id", "Name", book.PublisherId);
+
             return View(book);
         }
 
@@ -94,6 +129,16 @@ namespace Tuan6.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (book.AuthorId.HasValue)
+            {
+                var author = await _context.Authors.FindAsync(book.AuthorId.Value);
+                if (author != null)
+                {
+                    book.Author = author.Name;
+                    ModelState.Remove("Author");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 var dbBook = await _bookRepository.GetByIdAsync(id);
@@ -104,6 +149,8 @@ namespace Tuan6.Areas.Admin.Controllers
 
                 dbBook.Title = book.Title;
                 dbBook.Author = book.Author;
+                dbBook.AuthorId = book.AuthorId;
+                dbBook.PublisherId = book.PublisherId;
                 dbBook.Price = book.Price;
                 dbBook.Description = book.Description;
                 dbBook.StockQuantity = book.StockQuantity;
@@ -120,6 +167,13 @@ namespace Tuan6.Areas.Admin.Controllers
 
             var categories = await _categoryRepository.GetAllAsync();
             ViewBag.Categories = new SelectList(categories, "Id", "Name", book.CategoryId);
+
+            var authors = await _context.Authors.OrderBy(a => a.Name).ToListAsync();
+            ViewBag.Authors = new SelectList(authors, "Id", "Name", book.AuthorId);
+
+            var publishers = await _context.Publishers.OrderBy(p => p.Name).ToListAsync();
+            ViewBag.Publishers = new SelectList(publishers, "Id", "Name", book.PublisherId);
+
             return View(book);
         }
 

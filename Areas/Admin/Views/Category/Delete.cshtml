@@ -3,44 +3,41 @@
     ViewData["Title"] = "Xác nhận xóa Danh mục";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow border-0 rounded-3">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
-                    <h3 class="card-title fw-bold text-danger mt-3">Xác nhận xóa danh mục?</h3>
-                </div>
+<header class="admin-header">
+    <div class="page-title">
+        <h2>🗑️ Xác nhận xóa Danh mục</h2>
+        <p>Hành động này không thể hoàn tác và sẽ ảnh hưởng trực tiếp đến các cuốn sách liên quan.</p>
+    </div>
+    <div class="header-right">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">↩ Quay lại</a>
+    </div>
+</header>
 
-                <div class="alert alert-warning p-4 border border-warning rounded-3 mb-4">
-                    <h5 class="fw-bold"><i class="bi bi-info-circle-fill"></i> CẢNH BÁO QUAN TRỌNG:</h5>
-                    <p class="mb-0">Xóa danh mục <strong>"@Model.Name"</strong> sẽ tự động xóa tất cả các sản phẩm thuộc danh mục này.</p>
-                </div>
-
-                <div class="bg-light p-4 rounded-3 border mb-4">
-                    <div class="row">
-                        <div class="col-sm-4 text-muted fw-bold">Mã danh mục:</div>
-                        <div class="col-sm-8 fw-bold">@Model.Id</div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-4 text-muted fw-bold">Tên danh mục:</div>
-                        <div class="col-sm-8 fw-bold">@Model.Name</div>
-                    </div>
-                </div>
-
-                <form asp-action="Delete" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <div class="d-flex justify-content-between gap-3">
-                        <a asp-action="Index" class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-danger w-50 py-2 rounded-pill fw-bold shadow-sm">Đồng ý xóa</button>
-                    </div>
-                </form>
-            </div>
+<div class="admin-content">
+    <div class="data-table-card" style="padding: 32px; max-width: 600px; margin: 0 auto; text-align: center;">
+        <div style="font-size: 64px; color: var(--danger); margin-bottom: 16px;">⚠️</div>
+        <h3 style="margin-bottom: 16px; color: var(--danger);">CẢNH BÁO QUAN TRỌNG:</h3>
+        
+        <div style="background: #fff8f8; border: 1px solid #ffcccc; color: #cc0000; padding: 16px; border-radius: var(--radius); font-size: 14px; margin-bottom: 24px; text-align: left; line-height: 1.6;">
+            <strong>Lưu ý:</strong> Việc xóa danh mục <strong>"@Model.Name"</strong> sẽ tự động xóa tất cả các sản phẩm/cuốn sách thuộc danh mục này trong cơ sở dữ liệu.
         </div>
+
+        <div style="background: var(--gray-100); padding: 24px; border-radius: var(--radius); text-align: left; margin-bottom: 32px; line-height: 2;">
+            <div><strong>Mã danh mục:</strong> #DM-@Model.Id.ToString("D3")</div>
+            <div><strong>Tên danh mục:</strong> @Model.Name</div>
+        </div>
+
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-danger btn-lg" style="flex: 1; justify-content: center;">
+                    🗑 Đồng ý xóa
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg" style="flex: 1; justify-content: center;">
+                    Hủy bỏ
+                </a>
+            </div>
+        </form>
     </div>
 </div>
-
-@section Scripts {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-}

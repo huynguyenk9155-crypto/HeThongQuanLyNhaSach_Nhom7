@@ -15,6 +15,8 @@ namespace Tuan6.Models
         public DbSet<BookImage> BookImages { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<Author> Authors { get; set; }
+        public DbSet<Publisher> Publishers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,6 +41,18 @@ namespace Tuan6.Models
                 .HasOne(od => od.Book)
                 .WithMany(b => b.OrderDetails)
                 .HasForeignKey(od => od.BookId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Book>()
+                .HasOne(b => b.AuthorRelation)
+                .WithMany(a => a.Books)
+                .HasForeignKey(b => b.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Book>()
+                .HasOne(b => b.Publisher)
+                .WithMany(p => p.Books)
+                .HasForeignKey(b => b.PublisherId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

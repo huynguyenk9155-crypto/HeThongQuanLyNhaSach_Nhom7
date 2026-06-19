@@ -14,7 +14,11 @@ namespace Tuan6.Repositories
 
         public async Task<IEnumerable<Book>> GetAllAsync()
         {
-            return await _context.Books.Include(b => b.Category).ToListAsync();
+            return await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.AuthorRelation)
+                .Include(b => b.Publisher)
+                .ToListAsync();
         }
 
         public async Task<Book?> GetByIdAsync(int id)
@@ -22,6 +26,8 @@ namespace Tuan6.Repositories
             return await _context.Books
                 .Include(b => b.Category)
                 .Include(b => b.Images)
+                .Include(b => b.AuthorRelation)
+                .Include(b => b.Publisher)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
 

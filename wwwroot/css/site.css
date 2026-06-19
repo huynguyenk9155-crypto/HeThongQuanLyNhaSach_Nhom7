@@ -1431,66 +1431,79 @@
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
             margin-bottom: 32px;
         }
 
         .stat-card {
             background: var(--white);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             padding: 24px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.04);
             display: flex;
             align-items: center;
-            gap: 16px;
-            transition: var(--transition);
+            gap: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
+            border-color: rgba(102, 126, 234, 0.2);
         }
 
         .stat-card .stat-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: var(--radius-md);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
+            box-shadow: inset 0 -4px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .stat-card .stat-icon.blue {
-            background: #e8f0fe;
-            color: var(--primary);
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
         }
 
         .stat-card .stat-icon.green {
-            background: #d4edda;
-            color: var(--success);
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #16a34a;
         }
 
         .stat-card .stat-icon.orange {
-            background: #fff3cd;
-            color: #856404;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #d97706;
         }
 
         .stat-card .stat-icon.red {
-            background: #fee;
-            color: var(--danger);
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
         }
 
         .stat-card .stat-info h4 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             color: var(--dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
         }
 
         .stat-card .stat-info p {
             font-size: 13px;
-            color: var(--gray-600);
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stat-card .stat-info .change {
@@ -1511,21 +1524,28 @@
         .charts-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 20px;
+            gap: 24px;
             margin-bottom: 32px;
         }
 
         .chart-card {
             background: var(--white);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             padding: 24px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
         }
 
         .chart-card h4 {
             font-size: 16px;
             font-weight: 700;
-            margin-bottom: 20px;
+            color: var(--dark);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .chart-placeholder {
@@ -1543,80 +1563,95 @@
         .bar-chart {
             display: flex;
             align-items: flex-end;
-            gap: 12px;
-            height: 200px;
+            gap: 16px;
+            height: 220px;
             padding-top: 20px;
+            border-bottom: 2px solid var(--gray-100);
+            position: relative;
+            margin-bottom: 24px;
         }
 
         .bar-chart .bar {
             flex: 1;
-            border-radius: 6px 6px 0 0;
-            transition: var(--transition);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             cursor: pointer;
         }
 
         .bar-chart .bar:hover {
-            opacity: 0.8;
+            transform: scaleX(1.05);
+            filter: brightness(1.1);
         }
 
         .bar-chart .bar .bar-label {
             position: absolute;
-            bottom: -24px;
+            bottom: -28px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 11px;
-            color: var(--gray-600);
-            white-space: nowrap;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-500);
         }
 
         .bar-chart .bar .bar-value {
             position: absolute;
-            top: -20px;
+            top: -24px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--gray-700);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gray-800);
+            transition: all 0.2s ease;
         }
 
         /* Donut Chart Simulation */
         .donut-chart {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
-            background: conic-gradient(
-                var(--primary) 0% 35%,
-                var(--success) 35% 55%,
-                var(--warning) 55% 75%,
-                var(--danger) 75% 90%,
-                var(--gray-400) 90% 100%
-            );
             margin: 0 auto;
             position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .donut-chart:hover {
+            transform: scale(1.03);
         }
 
         .donut-chart::after {
             content: '';
             position: absolute;
-            top: 30px;
-            left: 30px;
-            right: 30px;
-            bottom: 30px;
+            top: 36px;
+            left: 36px;
+            right: 36px;
+            bottom: 36px;
             background: white;
             border-radius: 50%;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .donut-legend {
-            margin-top: 20px;
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .donut-legend .legend-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 8px 12px;
             font-size: 13px;
+            border-radius: var(--radius-sm);
+            background: var(--gray-100);
+            transition: background-color 0.2s ease;
+        }
+        
+        .donut-legend .legend-item:hover {
+            background: var(--gray-200);
         }
 
         .donut-legend .legend-item .dot {
@@ -1625,14 +1660,17 @@
             border-radius: 50%;
             margin-right: 8px;
             display: inline-block;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .donut-legend .legend-item .label {
-            color: var(--gray-600);
+            color: var(--gray-700);
+            font-weight: 500;
         }
 
         .donut-legend .legend-item .value {
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--gray-800);
         }
 
         /* ===== ADMIN DATA TABLE ===== */

@@ -28,7 +28,7 @@
         </div>
         <div style="flex: 1; line-height: 2;">
             <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">@Model.Title</h2>
-            <div style="font-size: 16px; color: var(--gray-600); margin-bottom: 16px;">Tác giả: <strong>@Model.Author</strong></div>
+            <div style="font-size: 16px; color: var(--gray-600); margin-bottom: 16px;">Tác giả: <strong>@Model.Author</strong> @(Model.Publisher != null ? $" • NXB: {Model.Publisher.Name}" : "")</div>
 
             <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 14px;">
                 <div><strong>Thể loại:</strong> @(Model.Category?.Name ?? "N/A")</div>
@@ -52,9 +52,17 @@
 
             <div style="margin-top: 24px; border-top: 1px solid var(--gray-200); padding-top: 16px;">
                 <h4 style="margin-bottom: 8px;">Mô tả sách:</h4>
-                <p style="font-size: 14px; color: var(--gray-750); line-height: 1.6; text-align: justify;">
+                <p style="font-size: 14px; color: var(--gray-750); line-height: 1.6; text-align: justify; margin-bottom: 16px;">
                     @(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả cho cuốn sách này." : Model.Description)
                 </p>
+
+                @if (Model.AuthorRelation != null && !string.IsNullOrEmpty(Model.AuthorRelation.Biography))
+                {
+                    <h4 style="margin-top: 16px; margin-bottom: 8px;">Tiểu sử tác giả:</h4>
+                    <p style="font-size: 14px; color: var(--gray-600); line-height: 1.6; text-align: justify; font-style: italic;">
+                        @Model.AuthorRelation.Biography
+                    </p>
+                }
             </div>
         </div>
     </div>

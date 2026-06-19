@@ -1,0 +1,42 @@
+@model Tuan6.Models.Author
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Xóa Tác giả";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>🗑️ Xóa Tác giả</h1>
+        <p>Xác nhận xóa tác giả khỏi danh sách hệ thống</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline">⬅️ Quay lại</a>
+</div>
+
+<div class="admin-content" style="max-width: 600px;">
+    <div class="data-table-card" style="padding: 30px; border-top: 4px solid var(--danger);">
+        <div style="background: rgba(220, 53, 69, 0.05); border: 1px solid rgba(220, 53, 69, 0.1); padding: 16px; border-radius: var(--radius); margin-bottom: 24px; color: var(--danger); font-size: 14px; font-weight: 500;">
+            ⚠️ <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Vui lòng kiểm tra kỹ thông tin tác giả trước khi xóa!
+        </div>
+
+        <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; margin-bottom: 30px; font-size: 15px;">
+            <div style="color: var(--gray-500); font-weight: 500;">Mã tác giả:</div>
+            <div style="font-weight: bold; color: var(--dark);">#TG-@Model.Id</div>
+
+            <div style="color: var(--gray-500); font-weight: 500;">Tên tác giả:</div>
+            <div style="font-weight: bold; color: var(--dark);">@Model.Name</div>
+
+            <div style="color: var(--gray-500); font-weight: 500;">Tiểu sử:</div>
+            <div style="color: var(--gray-600); line-height: 1.5;">
+                @(string.IsNullOrEmpty(Model.Biography) ? "Không có thông tin" : Model.Biography)
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--gray-200);">
+                <a asp-action="Index" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none;">Hủy</a>
+                <button type="submit" class="btn btn-danger" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; background: var(--danger); color: white;">Xác nhận xóa</button>
+            </div>
+        </form>
+    </div>
+</div>

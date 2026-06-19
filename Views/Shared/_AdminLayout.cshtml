@@ -44,6 +44,15 @@
                 <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="@(controller == "Category" ? "active" : "")">
                     <span class="icon">📂</span> Quản lý danh mục
                 </a>
+                <a asp-area="Admin" asp-controller="Author" asp-action="Index" class="@(controller == "Author" ? "active" : "")">
+                    <span class="icon">✍️</span> Quản lý tác giả
+                </a>
+                <a asp-area="Admin" asp-controller="Publisher" asp-action="Index" class="@(controller == "Publisher" ? "active" : "")">
+                    <span class="icon">🏢</span> Quản lý nhà xuất bản
+                </a>
+                <a asp-area="Admin" asp-controller="Customer" asp-action="Index" class="@(controller == "Customer" ? "active" : "")">
+                    <span class="icon">👥</span> Quản lý khách hàng
+                </a>
                 <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="@(controller == "Order" ? "active" : "")">
                     <span class="icon">📦</span> Quản lý đơn hàng
                 </a>
@@ -117,7 +126,7 @@
         {
             <text>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"]?.ToString() ?? ""))');
+                showToast('success', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"]!.ToString()))');
             });
             </text>
         }
@@ -125,7 +134,7 @@
         {
             <text>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"]?.ToString() ?? ""))');
+                showToast('error', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"]!.ToString()))');
             });
             </text>
         }

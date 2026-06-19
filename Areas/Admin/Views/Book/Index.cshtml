@@ -59,7 +59,7 @@
                                     </div>
                                     <div>
                                         <div class="book-name">@item.Title</div>
-                                        <div class="book-cat">@(item.Category?.Name ?? "N/A") • @item.Author</div>
+                                        <div class="book-cat">@(item.Category?.Name ?? "N/A") • @item.Author @(item.Publisher != null ? $" • NXB: {item.Publisher.Name}" : "")</div>
                                     </div>
                                 </div>
                             </td>

@@ -1,0 +1,57 @@
+@model IEnumerable<Tuan6.Models.Author>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý Tác giả";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>✍️ Quản lý Tác giả</h1>
+        <p>Quản lý danh sách tác giả của nhà sách</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">➕ Thêm tác giả mới</a>
+</div>
+
+<div class="admin-content">
+    <div class="data-table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">MÃ</th>
+                    <th>TÊN TÁC GIẢ</th>
+                    <th>TIỂU SỬ</th>
+                    <th style="width: 150px; text-align: center;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--gray-500); padding: 30px;">
+                            Chưa có tác giả nào trong hệ thống.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="bold">#TG-@item.Id</td>
+                            <td class="bold">@item.Name</td>
+                            <td class="text-muted">
+                                @(string.IsNullOrEmpty(item.Biography) ? "Không có tiểu sử" : (item.Biography.Length > 100 ? item.Biography.Substring(0, 100) + "..." : item.Biography))
+                            </td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline" style="color: var(--primary); border-color: var(--primary-light);">Sửa</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: rgba(220, 53, 69, 0.2);">Xóa</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

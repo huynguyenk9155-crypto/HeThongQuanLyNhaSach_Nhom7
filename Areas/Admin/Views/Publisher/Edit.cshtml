@@ -1,0 +1,51 @@
+@model Tuan6.Models.Publisher
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Sửa Nhà xuất bản";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>✏️ Sửa thông tin Nhà xuất bản</h1>
+        <p>Cập nhật thông tin chi tiết của nhà xuất bản #XB-@Model.Id</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline">⬅️ Quay lại</a>
+</div>
+
+<div class="admin-content" style="max-width: 600px;">
+    <div class="data-table-card" style="padding: 24px;">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="Name">Tên nhà xuất bản</label>
+                <input asp-for="Name" placeholder="Nhập tên nhà xuất bản" required style="width: 100%; padding: 10px; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 14px;" />
+                <span asp-validation-for="Name" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label asp-for="Address">Địa chỉ</label>
+                <input asp-for="Address" placeholder="Nhập địa chỉ nhà xuất bản" style="width: 100%; padding: 10px; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 14px;" />
+                <span asp-validation-for="Address" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label asp-for="Email">Địa chỉ Email</label>
+                <input asp-for="Email" type="email" placeholder="publisher@domain.com" style="width: 100%; padding: 10px; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 14px;" />
+                <span asp-validation-for="Email" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gray-200);">
+                <a asp-action="Index" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none;">Hủy</a>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border: none; cursor: pointer;">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>

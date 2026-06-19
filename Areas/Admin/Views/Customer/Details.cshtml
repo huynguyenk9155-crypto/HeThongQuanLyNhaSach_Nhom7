@@ -1,0 +1,114 @@
+@model Tuan6.Models.ApplicationUser
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Chi tiết Khách hàng";
+    var orders = ViewBag.Orders as IEnumerable<Tuan6.Models.Order> ?? new List<Tuan6.Models.Order>();
+    var initials = string.IsNullOrEmpty(Model.FullName) ? "KH" : Model.FullName.Substring(0, Math.Min(2, Model.FullName.Length)).ToUpper();
+}
+
+<div class="admin-header">
+    <div>
+        <h1>👥 Chi tiết Khách hàng</h1>
+        <p>Xem thông tin hồ sơ và lịch sử mua hàng của khách hàng</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline">⬅️ Quay lại</a>
+</div>
+
+<div class="admin-content">
+    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 24px;">
+        
+        <!-- Left Side: Profile Card -->
+        <div class="data-table-card" style="padding: 24px; text-align: center; height: fit-content;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin-bottom: 16px;">
+                @initials
+            </div>
+            <h2 style="font-size: 18px; font-weight: bold; color: var(--dark); margin: 0 0 8px;">@Model.FullName</h2>
+            <span class="status-pill @(ViewBag.Role == "Admin" ? "completed" : "processing")" style="margin-bottom: 24px; display: inline-block;">
+                @(ViewBag.Role == "Admin" ? "Quản trị viên" : "Khách hàng")
+            </span>
+
+            <div style="text-align: left; border-top: 1px solid var(--gray-200); padding-top: 20px; font-size: 14px;">
+                <div style="margin-bottom: 12px;">
+                    <span style="color: var(--gray-500); display: block; margin-bottom: 2px;">Tên đăng nhập</span>
+                    <strong style="color: var(--dark);">@Model.UserName</strong>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span style="color: var(--gray-500); display: block; margin-bottom: 2px;">Địa chỉ Email</span>
+                    <strong style="color: var(--dark); word-break: break-all;">@Model.Email</strong>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span style="color: var(--gray-500); display: block; margin-bottom: 2px;">Số điện thoại</span>
+                    <strong style="color: var(--dark);">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</strong>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span style="color: var(--gray-500); display: block; margin-bottom: 2px;">Địa chỉ giao hàng</span>
+                    <strong style="color: var(--dark);">@(string.IsNullOrEmpty(Model.Address) ? "Chưa cập nhật" : Model.Address)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Order History -->
+        <div class="data-table-card" style="padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: bold; color: var(--dark); margin: 0 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--gray-200);">
+                📦 Lịch sử đơn hàng (@orders.Count())
+            </h3>
+
+            @if (!orders.Any())
+            {
+                <div style="text-align: center; padding: 40px; color: var(--gray-500);">
+                    Khách hàng này chưa thực hiện đơn hàng nào.
+                </div>
+            }
+            else
+            {
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ ĐƠN</th>
+                            <th>NGÀY MUA</th>
+                            <th>ĐỊA CHỈ</th>
+                            <th>TRẠNG THÁI</th>
+                            <th style="text-align: right;">TỔNG TIỀN</th>
+                            <th style="text-align: center;">CHI TIẾT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in orders)
+                        {
+                            var statusClass = order.Status switch
+                            {
+                                "Pending" => "pending",
+                                "Processing" => "processing",
+                                "Shipping" => "shipping",
+                                "Completed" => "completed",
+                                "Cancelled" => "cancelled",
+                                _ => ""
+                            };
+                            var statusText = order.Status switch
+                            {
+                                "Pending" => "Chờ xác nhận",
+                                "Processing" => "Đang xử lý",
+                                "Shipping" => "Đang giao",
+                                "Completed" => "Hoàn thành",
+                                "Cancelled" => "Đã hủy",
+                                _ => order.Status
+                            };
+                            <tr>
+                                <td class="bold">#@order.Id</td>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@order.Address</td>
+                                <td>
+                                    <span class="status-pill @statusClass">@statusText</span>
+                                </td>
+                                <td class="bold price" style="text-align: right;">@order.TotalAmount.ToString("#,##0đ")</td>
+                                <td style="text-align: center;">
+                                    <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline">Chi tiết</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

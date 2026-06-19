@@ -1,0 +1,64 @@
+@model IEnumerable<Tuan6.Areas.Admin.Controllers.CustomerController.UserListItem>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý Khách hàng";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>👥 Quản lý Khách hàng</h1>
+        <p>Danh sách và quản lý vai trò của người dùng trên hệ thống</p>
+    </div>
+</div>
+
+<div class="admin-content">
+    <div class="data-table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 60px; text-align: center;">AVATAR</th>
+                    <th>HỌ VÀ TÊN</th>
+                    <th>TÊN ĐĂNG NHẬP</th>
+                    <th>EMAIL</th>
+                    <th>VAI TRÒ</th>
+                    <th style="width: 250px; text-align: center;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var initials = string.IsNullOrEmpty(item.FullName) ? "KH" : item.FullName.Substring(0, Math.Min(2, item.FullName.Length)).ToUpper();
+                    var isAdmin = item.Role == "Admin";
+                    <tr>
+                        <td style="text-align: center;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: @(isAdmin ? "rgba(40, 167, 69, 0.1)" : "rgba(0, 123, 255, 0.1)"); color: @(isAdmin ? "var(--success)" : "var(--primary)"); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;">
+                                @initials
+                            </div>
+                        </td>
+                        <td class="bold">@item.FullName</td>
+                        <td>@item.UserName</td>
+                        <td>@item.Email</td>
+                        <td>
+                            <span class="status-pill @(isAdmin ? "completed" : "processing")">
+                                @(isAdmin ? "Quản trị viên" : "Khách hàng")
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline" style="color: var(--primary); border-color: var(--primary-light);">Xem chi tiết</a>
+                                
+                                <form asp-action="ToggleRole" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn đổi vai trò của tài khoản này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--warning); border-color: rgba(255, 193, 7, 0.3);">
+                                        Đổi vai trò
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

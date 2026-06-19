@@ -71,15 +71,39 @@
         <!-- Best Selling Categories -->
         <div class="chart-card">
             <h4>📊 Tỷ lệ sách bán theo Thể loại</h4>
-            <div class="donut-chart" style="background: conic-gradient(var(--primary) 0% 50%, var(--success) 50% 80%, var(--warning) 80% 100%);"></div>
+            @{
+                var categorySalesList = categorySales as IEnumerable<dynamic>;
+                string conicGradient = "conic-gradient(var(--gray-300) 0% 100%)";
+                if (categorySalesList != null && categorySalesList.Any())
+                {
+                    double currentOffset = 0;
+                    var gradients = new List<string>();
+                    string[] chartColors = { "var(--primary)", "var(--success)", "var(--warning)", "var(--danger)", "var(--gray-400)" };
+                    int idx = 0;
+                    foreach (var item in categorySalesList)
+                    {
+                        var color = chartColors[idx % chartColors.Length];
+                        idx++;
+                        double percentage = (double)item.Percentage;
+                        double nextOffset = currentOffset + percentage;
+                        gradients.Add($"{color} {currentOffset.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}% {nextOffset.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%");
+                        currentOffset = nextOffset;
+                    }
+                    if (gradients.Any())
+                    {
+                        conicGradient = "conic-gradient(" + string.Join(", ", gradients) + ")";
+                    }
+                }
+            }
+            <div class="donut-chart" style="background: @conicGradient;"></div>
             <div class="donut-legend">
                 @{
                     string[] colors = { "var(--primary)", "var(--success)", "var(--warning)", "var(--danger)", "var(--gray-400)" };
                     int colorIdx = 0;
                 }
-                @if (categorySales != null)
+                @if (categorySalesList != null && categorySalesList.Any())
                 {
-                    foreach (var item in categorySales)
+                    foreach (var item in categorySalesList)
                     {
                         var color = colors[colorIdx % colors.Length];
                         colorIdx++;
@@ -95,6 +119,60 @@
                 }
             </div>
         </div>
+    </div>
+
+    <!-- Best Sellers -->
+    <div class="data-table-card" style="margin-bottom: 24px;">
+        <div class="data-table-header">
+            <h4>🏆 Sách bán chạy nhất (Top 5)</h4>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Sách</th>
+                    <th>Tác giả</th>
+                    <th>Giá</th>
+                    <th>Số lượng bán</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var bestSellers = ViewBag.BestSellers as IEnumerable<Tuan6.Models.BestSellerViewModel> ?? new List<Tuan6.Models.BestSellerViewModel>();
+                }
+                @if (bestSellers.Any())
+                {
+                    foreach (var item in bestSellers)
+                    {
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Title" style="width: 32px; height: 42px; object-fit: contain; border-radius: 4px;" />
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size: 24px;">📕</span>
+                                    }
+                                    <strong>@item.Title</strong>
+                                </div>
+                            </td>
+                            <td>@item.Author</td>
+                            <td>@item.Price.ToString("N0")đ</td>
+                            <td><strong style="color: var(--primary);">@item.QuantitySold</strong> cuốn</td>
+                            <td><strong style="color: var(--success); font-weight: 600;">@item.TotalRevenue.ToString("N0")đ</strong></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--gray-500); padding: 24px;">Chưa có dữ liệu sách bán chạy.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 
     <!-- Recent Orders -->
