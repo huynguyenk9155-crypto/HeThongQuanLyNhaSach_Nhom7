@@ -60,6 +60,9 @@ namespace Tuan6.Controllers
                 return Forbid();
             }
 
+            ViewBag.PaymentTransaction = await _context.PaymentTransactions
+                .FirstOrDefaultAsync(pt => pt.OrderId == id);
+
             return View(order);
         }
     }

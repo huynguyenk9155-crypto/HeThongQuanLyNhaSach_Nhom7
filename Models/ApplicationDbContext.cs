@@ -17,6 +17,7 @@ namespace Tuan6.Models
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<Publisher> Publishers { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -54,6 +55,13 @@ namespace Tuan6.Models
                 .WithMany(p => p.Books)
                 .HasForeignKey(b => b.PublisherId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // PaymentTransaction relationship
+            builder.Entity<PaymentTransaction>()
+                .HasOne(pt => pt.Order)
+                .WithMany()
+                .HasForeignKey(pt => pt.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

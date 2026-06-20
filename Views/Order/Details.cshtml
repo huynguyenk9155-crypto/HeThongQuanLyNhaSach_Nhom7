@@ -105,10 +105,51 @@
                     }
                 </span>
             </div>
+            @{
+                var payment = ViewBag.PaymentTransaction as Tuan6.Models.PaymentTransaction;
+                var paymentMethodName = "Thanh toán khi nhận hàng (COD)";
+                var paymentStatusName = "Chờ thanh toán";
+                
+                if (payment != null)
+                {
+                    if (payment.PaymentMethod.ToLower() == "vnpay")
+                    {
+                        paymentMethodName = "VNPay QR";
+                    }
+                    else if (payment.PaymentMethod.ToLower() == "momo")
+                    {
+                        paymentMethodName = "MoMo QR";
+                    }
+                    
+                    if (payment.Status.ToLower() == "completed")
+                    {
+                        paymentStatusName = "Đã thanh toán thành công";
+                    }
+                    else if (payment.Status.ToLower() == "pending")
+                    {
+                        paymentStatusName = "Chờ thanh toán";
+                    }
+                    else if (payment.Status.ToLower() == "failed")
+                    {
+                        paymentStatusName = "Thanh toán thất bại";
+                    }
+                }
+            }
             <div class="summary-row">
                 <span class="label">Phương thức</span>
-                <span class="value">Thanh toán khi nhận hàng (COD)</span>
+                <span class="value">@paymentMethodName</span>
             </div>
+            @if (payment != null && payment.PaymentMethod.ToLower() != "cod")
+            {
+                <div class="summary-row">
+                    <span class="label">Trạng thái TT</span>
+                    <span class="value" style="font-weight: 600; color: @(payment.Status.ToLower() == "completed" ? "var(--success)" : "var(--warning)")">@paymentStatusName</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Mã giao dịch</span>
+                    <span class="value" style="font-family: monospace;">@payment.TransactionCode</span>
+                </div>
+            }
             <div class="summary-row total" style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--gray-200);">
                 <span class="label">Tổng tiền</span>
                 <span class="value">@Model.TotalAmount.ToString("N0")đ</span>

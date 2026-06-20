@@ -13,7 +13,8 @@
         { "Ngoại ngữ", ("🗣️", "linear-gradient(135deg, #30CFD0, #330867)", "Tài liệu học tiếng Anh, tiếng Nhật, tiếng Trung và các ngôn ngữ phổ biến.") },
         { "Tâm lý học", ("🧠", "linear-gradient(135deg, #a18cd1, #fbc2eb)", "Giải mã hành vi con người, tâm lý đám đông và cảm xúc nội tâm.") },
         { "Công nghệ", ("💻", "linear-gradient(135deg, #243B55, #141E30)", "Kiến thức lập trình, trí tuệ nhân tạo, thiết kế hệ thống và tin học.") },
-        { "Nghệ thuật", ("🎨", "linear-gradient(135deg, #f093fb, #f5576c)", "Hội họa, âm nhạc, kiến trúc và nghệ thuật thị giác đương đại.") }
+        { "Nghệ thuật", ("🎨", "linear-gradient(135deg, #f093fb, #f5576c)", "Hội họa, âm nhạc, kiến trúc và nghệ thuật thị giác đương đại.") },
+        { "Dụng cụ học tập", ("✏️", "linear-gradient(135deg, #ABDCFF, #0396FF)", "Các loại máy tính bỏ túi, bút viết, bút chì màu và dụng cụ hỗ trợ học tập hàng ngày.") }
     };
 }
 
@@ -28,47 +29,100 @@
         </p>
     </div>
 
-    <!-- Categories Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
-        @foreach (var cat in Model)
-        {
-            var metaExists = categoryMetadata.TryGetValue(cat.Name, out var meta);
-            var icon = metaExists ? meta.Icon : "📖";
-            var gradient = metaExists ? meta.Color : "linear-gradient(135deg, #84fab0, #8fd3f4)";
-            var desc = metaExists ? meta.Description : "Khám phá kho tàng tri thức với các đầu sách chọn lọc.";
-            var bookCount = cat.Books?.Count ?? 0;
+    <!-- Book Categories Section -->
+    <div style="margin-bottom: 48px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--gray-200); padding-bottom: 10px;">
+            📚 Thể Loại Sách
+        </h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+            @foreach (var cat in Model.Where(c => !c.Name.Equals("Dụng cụ học tập", StringComparison.OrdinalIgnoreCase)))
+            {
+                var metaExists = categoryMetadata.TryGetValue(cat.Name, out var meta);
+                var icon = metaExists ? meta.Icon : "📖";
+                var gradient = metaExists ? meta.Color : "linear-gradient(135deg, #84fab0, #8fd3f4)";
+                var desc = metaExists ? meta.Description : "Khám phá kho tàng tri thức với các đầu sách chọn lọc.";
+                var bookCount = cat.Books?.Count ?? 0;
 
-            <a asp-action="Index" asp-route-categoryId="@cat.Id" class="category-card" style="display: flex; flex-direction: column; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow); border: 1px solid var(--gray-200); padding: 24px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; cursor: pointer;">
-                <!-- Card Gradient Header accent -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: @gradient;"></div>
-                
-                <!-- Icon and Count Badge -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                    <div style="width: 56px; height: 56px; border-radius: var(--radius); background: @gradient; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease;" class="category-icon-wrapper">
-                        @icon
+                <a asp-action="Index" asp-route-categoryId="@cat.Id" class="category-card" style="display: flex; flex-direction: column; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow); border: 1px solid var(--gray-200); padding: 24px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; cursor: pointer;">
+                    <!-- Card Gradient Header accent -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: @gradient;"></div>
+                    
+                    <!-- Icon and Count Badge -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="width: 56px; height: 56px; border-radius: var(--radius); background: @gradient; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease;" class="category-icon-wrapper">
+                            @icon
+                        </div>
+                        <span style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(26,115,232,0.1);">
+                            @bookCount cuốn
+                        </span>
                     </div>
-                    <span style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(26,115,232,0.1);">
-                        @bookCount cuốn
-                    </span>
-                </div>
 
-                <!-- Text Info -->
-                <div style="flex: 1;">
-                    <h3 style="font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 10px; transition: color 0.2s ease;">
-                        @cat.Name
-                    </h3>
-                    <p style="color: var(--gray-600); font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
-                        @desc
-                    </p>
-                </div>
+                    <!-- Text Info -->
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 10px; transition: color 0.2s ease;">
+                            @cat.Name
+                        </h3>
+                        <p style="color: var(--gray-600); font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                            @desc
+                        </p>
+                    </div>
 
-                <!-- Action Button link footer -->
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--primary); transition: gap 0.2s ease;" class="category-action-link">
-                    <span>Xem sách cùng danh mục</span>
-                    <span>→</span>
-                </div>
-            </a>
-        }
+                    <!-- Action Button link footer -->
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--primary); transition: gap 0.2s ease;" class="category-action-link">
+                        <span>Xem sách cùng danh mục</span>
+                        <span>→</span>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Stationery Section -->
+    <div>
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--gray-200); padding-bottom: 10px;">
+            ✏️ Dụng Cụ Học Tập
+        </h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+            @foreach (var cat in Model.Where(c => c.Name.Equals("Dụng cụ học tập", StringComparison.OrdinalIgnoreCase)))
+            {
+                var metaExists = categoryMetadata.TryGetValue(cat.Name, out var meta);
+                var icon = metaExists ? meta.Icon : "📖";
+                var gradient = metaExists ? meta.Color : "linear-gradient(135deg, #84fab0, #8fd3f4)";
+                var desc = metaExists ? meta.Description : "Khám phá các sản phẩm văn phòng phẩm chọn lọc.";
+                var bookCount = cat.Books?.Count ?? 0;
+
+                <a asp-action="Index" asp-route-categoryId="@cat.Id" class="category-card" style="display: flex; flex-direction: column; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow); border: 1px solid var(--gray-200); padding: 24px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; cursor: pointer;">
+                    <!-- Card Gradient Header accent -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: @gradient;"></div>
+                    
+                    <!-- Icon and Count Badge -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="width: 56px; height: 56px; border-radius: var(--radius); background: @gradient; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease;" class="category-icon-wrapper">
+                            @icon
+                        </div>
+                        <span style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(26,115,232,0.1);">
+                            @bookCount sản phẩm
+                        </span>
+                    </div>
+
+                    <!-- Text Info -->
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 10px; transition: color 0.2s ease;">
+                            @cat.Name
+                        </h3>
+                        <p style="color: var(--gray-600); font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                            @desc
+                        </p>
+                    </div>
+
+                    <!-- Action Button link footer -->
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--primary); transition: gap 0.2s ease;" class="category-action-link">
+                        <span>Xem sản phẩm cùng danh mục</span>
+                        <span>→</span>
+                    </div>
+                </a>
+            }
+        </div>
     </div>
 </main>
 

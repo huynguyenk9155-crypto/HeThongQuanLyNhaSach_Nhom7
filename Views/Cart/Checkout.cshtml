@@ -19,6 +19,7 @@
 
             <form asp-action="Checkout" method="post">
                 @Html.AntiForgeryToken()
+                <input type="hidden" name="orderCode" id="hidden-order-code" />
 
                 @if (!ViewData.ModelState.IsValid)
                 {
@@ -45,6 +46,55 @@
                     <label asp-for="Address">Địa chỉ nhận hàng (Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành) *</label>
                     <input asp-for="Address" placeholder="Nhập đầy đủ địa chỉ nhận hàng" />
                     <span asp-validation-for="Address" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="form-group">
+                    <label style="font-weight: 700; margin-bottom: 12px; display: block;">💳 Phương thức thanh toán *</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                        <!-- VNPay Option -->
+                        <label style="position: relative; cursor: pointer;">
+                            <input type="radio" name="paymentMethod" value="vnpay" style="position: absolute; opacity: 0;" onchange="updatePaymentMethod('vnpay')" />
+                            <div style="padding: 16px; border: 2px solid var(--gray-300); border-radius: var(--radius); text-align: center; transition: all 0.3s ease;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🏦</div>
+                                <div style="font-weight: 600; font-size: 14px;">VNPay QR</div>
+                            </div>
+                        </label>
+
+                        <!-- MoMo Option -->
+                        <label style="position: relative; cursor: pointer;">
+                            <input type="radio" name="paymentMethod" value="momo" style="position: absolute; opacity: 0;" onchange="updatePaymentMethod('momo')" />
+                            <div style="padding: 16px; border: 2px solid var(--gray-300); border-radius: var(--radius); text-align: center; transition: all 0.3s ease;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">💰</div>
+                                <div style="font-weight: 600; font-size: 14px;">MoMo QR</div>
+                            </div>
+                        </label>
+
+                        <!-- COD Option -->
+                        <label style="position: relative; cursor: pointer;">
+                            <input type="radio" name="paymentMethod" value="cod" checked onchange="updatePaymentMethod('cod')" />
+                            <div style="padding: 16px; border: 2px solid var(--primary-color); border-radius: var(--radius); text-align: center; transition: all 0.3s ease;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🚚</div>
+                                <div style="font-weight: 600; font-size: 14px;">Thanh toán khi nhận</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- QR Code Display Area (Hidden by default) -->
+                <div id="qr-container" style="display: none; margin-top: 24px; padding: 24px; background: var(--gray-100); border-radius: var(--radius); text-align: center;">
+                    <h4 style="margin-bottom: 16px; font-size: 16px;">📱 Quét mã QR để thanh toán</h4>
+                    <div id="qr-image-container" style="margin-bottom: 16px;">
+                        <div style="width: 250px; height: 250px; margin: 0 auto; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <img id="qr-image" src="" alt="QR Code" style="width: 240px; height: 240px; border-radius: 6px;" />
+                        </div>
+                    </div>
+                    <p style="color: var(--gray-600); font-size: 13px; margin-bottom: 12px;">
+                        Số tiền: <span id="payment-amount" style="font-weight: 700; color: var(--danger);"></span>
+                    </p>
+                    <p style="color: var(--gray-600); font-size: 12px; line-height: 1.5;">
+                        Sau khi thanh toán thành công, vui lòng nhấn "Xác nhận đặt hàng" để hoàn tất đơn hàng.
+                    </p>
                 </div>
 
                 <div class="form-group">
@@ -93,17 +143,47 @@
                 }
             </div>
 
+            @{
+                var discountAmount = 0m;
+                var discountStr = Context.Session.GetString("DiscountAmount");
+                var appliedCode = Context.Session.GetString("AppliedPromoCode") ?? "";
+                if (!string.IsNullOrEmpty(discountStr) && decimal.TryParse(discountStr, out var d))
+                {
+                    discountAmount = d;
+                }
+                var finalAmount = totalAmount - discountAmount;
+                if (finalAmount < 0) finalAmount = 0;
+            }
+
             <div class="summary-row">
                 <span class="label">Tạm tính (@cart.Sum(i => i.Quantity) sản phẩm)</span>
-                <span class="value">@totalAmount.ToString("N0")đ</span>
+                <span class="value" id="summary-subtotal">@totalAmount.ToString("N0")đ</span>
+            </div>
+            <div class="summary-row" id="summary-discount-row" style="@(discountAmount > 0 ? "" : "display: none;")">
+                <span class="label">Giảm giá <span id="summary-applied-code" style="font-size: 11px; background: #e8eaed; color: #5f6368; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px;">@appliedCode</span></span>
+                <span class="value" id="summary-discount" style="color: var(--danger);">-@discountAmount.ToString("N0")đ</span>
             </div>
             <div class="summary-row">
                 <span class="label">Phí vận chuyển</span>
                 <span class="value" style="color: var(--success);">Miễn phí</span>
             </div>
-            <div class="summary-row total">
-                <span class="label">Tổng tiền</span>
-                <span class="value">@totalAmount.ToString("N0")đ</span>
+            <div class="summary-row total" id="summary-total-row">
+                <span class="label" style="font-weight: 700; font-size: 15px;">Tổng tiền</span>
+                <span class="value" id="summary-total" style="font-weight: 700; font-size: 16px; color: var(--danger); @(discountAmount > 0 ? "text-decoration: line-through; color: #8898aa; font-size: 14px;" : "")">@totalAmount.ToString("N0")đ</span>
+            </div>
+            <div class="summary-row total" id="summary-final-row" style="@(discountAmount > 0 ? "" : "display: none;")">
+                <span class="label" style="font-weight: 800; font-size: 18px; color: #333;">Thành tiền</span>
+                <span class="value" id="summary-final" style="font-weight: 800; font-size: 20px; color: #f5365c;">@finalAmount.ToString("N0")đ</span>
+            </div>
+
+            <!-- Promo Code Form -->
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                <label style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 8px; color: #333;">🎫 Nhập mã giảm giá</label>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <input type="text" id="promo-code-input" value="@appliedCode" placeholder="Mã giảm giá..." style="flex: 1; padding: 8px 12px; border: 2px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 14px; outline: none; text-transform: uppercase; min-width: 0;" />
+                    <button type="button" id="apply-promo-btn" style="background: #5e72e4; color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: bold; cursor: pointer; font-size: 14px; white-space: nowrap;">Áp dụng</button>
+                </div>
+                <div id="promo-message" style="font-size: 12px; margin-top: 8px; font-weight: 500; display: none;"></div>
             </div>
         </div>
     </div>
@@ -111,4 +191,200 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        let finalPayAmount = @finalAmount;
+        const orderCode = 'ORD-' + Date.now();
+
+        function updatePaymentMethod(method) {
+            const qrContainer = document.getElementById('qr-container');
+            const paymentMethodLabels = document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+                const label = input.parentElement;
+                if (input.checked) {
+                    label.style.borderColor = 'var(--primary-color)';
+                } else {
+                    label.style.borderColor = 'var(--gray-300)';
+                }
+            });
+
+            if (method === 'vnpay' || method === 'momo') {
+                qrContainer.style.display = 'block';
+                generateQRCode(method);
+            } else {
+                qrContainer.style.display = 'none';
+            }
+        }
+
+        function generateQRCode(method) {
+            const qrImage = document.getElementById('qr-image');
+            const paymentAmount = document.getElementById('payment-amount');
+            
+            // Format amount
+            paymentAmount.textContent = finalPayAmount.toLocaleString('vi-VN') + 'đ';
+
+            // Show loading
+            qrImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" font-family="sans-serif" font-size="14" fill="%23999"%3EĐang tạo QR...%3C/text%3E%3C/svg%3E';
+
+            // Fetch QR code từ API
+            fetch(`/api/payment/generate-qr`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    method: method,
+                    orderCode: orderCode,
+                    amount: finalPayAmount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Tạo QR image từ URL
+                    fetch(`/api/payment/qr-image?method=${method}&orderCode=${orderCode}&amount=${finalPayAmount}`)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const reader = new FileReader();
+                            reader.onloadend = function() {
+                                qrImage.src = reader.result;
+                            };
+                            reader.readAsDataURL(blob);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Fallback: Hiển thị QR từ external service
+                            const qrCodeUrl = data.qrUrl;
+                            qrImage.src = qrCodeUrl;
+                        });
+                } else {
+                    qrImage.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" font-family="sans-serif" font-size="12" fill="%23f00"%3ELỗi tạo QR%3C/text%3E%3C/svg%3E';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Fallback: Tạo QR code đơn giản
+                const qrData = `ORDER|${orderCode}|${finalPayAmount}`;
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+                qrImage.src = qrCodeUrl;
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set order code hidden input
+            const hiddenOrderCode = document.getElementById('hidden-order-code');
+            if (hiddenOrderCode) {
+                hiddenOrderCode.value = orderCode;
+            }
+
+            // Set default payment method (COD)
+            const codInput = document.querySelector('input[name="paymentMethod"][value="cod"]');
+            if (codInput) {
+                codInput.checked = true;
+            }
+
+            // Add click handlers to payment method labels
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const labels = document.querySelectorAll('input[name="paymentMethod"]').forEach(i => {
+                        const label = i.parentElement;
+                        if (i.checked) {
+                            label.querySelector('div').style.borderColor = 'var(--primary-color)';
+                        } else {
+                            label.querySelector('div').style.borderColor = 'var(--gray-300)';
+                        }
+                    });
+                });
+            });
+
+            // Promo code application handler
+            const applyPromoBtn = document.getElementById('apply-promo-btn');
+            const promoCodeInput = document.getElementById('promo-code-input');
+            const promoMessage = document.getElementById('promo-message');
+            
+            const summaryDiscountRow = document.getElementById('summary-discount-row');
+            const summaryAppliedCode = document.getElementById('summary-applied-code');
+            const summaryDiscount = document.getElementById('summary-discount');
+            const summaryTotal = document.getElementById('summary-total');
+            const summaryFinalRow = document.getElementById('summary-final-row');
+            const summaryFinal = document.getElementById('summary-final');
+
+            if (applyPromoBtn) {
+                applyPromoBtn.addEventListener('click', function() {
+                    const code = promoCodeInput.value.trim();
+                    if (!code) {
+                        showPromoMsg('Vui lòng nhập mã giảm giá.', 'error');
+                        return;
+                    }
+
+                    applyPromoBtn.disabled = true;
+                    applyPromoBtn.textContent = 'Đang áp dụng...';
+
+                    let params = new URLSearchParams();
+                    params.append('code', code);
+
+                    fetch('/Cart/ApplyPromoCodeJson', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: params
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        applyPromoBtn.disabled = false;
+                        applyPromoBtn.textContent = 'Áp dụng';
+
+                        if (data.success) {
+                            showPromoMsg(data.message, 'success');
+                            
+                            // Update display variables
+                            finalPayAmount = data.newTotal;
+                            
+                            // Update summary elements
+                            summaryDiscount.textContent = '-' + data.discountAmount.toLocaleString('vi-VN') + 'đ';
+                            summaryAppliedCode.textContent = data.code;
+                            summaryDiscountRow.style.display = 'flex';
+                            
+                            // Cross out old total
+                            summaryTotal.style.textDecoration = 'line-through';
+                            summaryTotal.style.color = '#8898aa';
+                            summaryTotal.style.fontSize = '14px';
+
+                            // Show final discounted total
+                            summaryFinal.textContent = data.newTotal.toLocaleString('vi-VN') + 'đ';
+                            summaryFinalRow.style.display = 'flex';
+                            
+                            // If payment method is already QR, regenerate QR code with new amount!
+                            const activeRadio = document.querySelector('input[name="paymentMethod"]:checked');
+                            if (activeRadio && (activeRadio.value === 'vnpay' || activeRadio.value === 'momo')) {
+                                generateQRCode(activeRadio.value);
+                            }
+                            
+                            if (typeof showToast === 'function') {
+                                showToast('success', data.message);
+                            }
+                        } else {
+                            showPromoMsg(data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        applyPromoBtn.disabled = false;
+                        applyPromoBtn.textContent = 'Áp dụng';
+                        console.error('Error applying promo code:', err);
+                        showPromoMsg('Đã có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                    });
+                });
+            }
+
+            function showPromoMsg(msg, type) {
+                promoMessage.textContent = msg;
+                promoMessage.style.display = 'block';
+                if (type === 'success') {
+                    promoMessage.style.color = 'var(--success)';
+                } else {
+                    promoMessage.style.color = 'var(--danger)';
+                }
+            }
+        });
+    </script>
 }

@@ -22,49 +22,108 @@
         { "Ngoại ngữ", "🗣️" },
         { "Tâm lý học", "🧠" },
         { "Công nghệ", "💻" },
-        { "Nghệ thuật", "🎨" }
+        { "Nghệ thuật", "🎨" },
+        { "Dụng cụ học tập", "✏️" }
     };
 }
 
 <main class="user-main">
-    <!-- Hero Banner (Only shown on Page 1 when no category is selected) -->
+    <!-- Hero Banner Carousel -->
     @if (selectedCategoryId == null && pageNumber == 1 && string.IsNullOrEmpty(ViewBag.SearchString))
     {
-        <div class="hero-banner">
-            <div class="hero-content">
-                <h2>🎉 Giảm giá đến 50%</h2>
-                <p>Khám phá hàng ngàn đầu sách hay với ưu đãi cực sốc. Miễn phí vận chuyển cho đơn hàng từ 150.000đ!</p>
-                <a href="#bookStoreCatalog" class="btn btn-lg">Mua sắm ngay →</a>
+        <div class="hero-slider" id="homeHeroSlider">
+            <div class="slider-track" id="sliderTrack">
+                <!-- Slide 1: Fahasa Brand Day -->
+                <div class="slide slide-fahasa">
+                    <div class="slide-content">
+                        <span class="slide-badge">⚡ Fahasa Brand Day</span>
+                        <h2>HÈ VUI KHÁM PHÁ<br>GIẢM ĐẾN 25%</h2>
+                        <p>Bùng nổ ưu đãi cùng bé lớn khôn mỗi ngày. Sách thiếu nhi, văn học, kỹ năng sống đồng loạt giảm sâu!</p>
+                        <a href="#bookStoreCatalog" class="btn btn-lg">Mua Sắm Ngay →</a>
+                    </div>
+                    <div class="slide-image">🏝️</div>
+                </div>
+
+                <!-- Slide 2: Lucky Wheel Promo -->
+                <div class="slide slide-luckywheel">
+                    <div class="slide-content">
+                        <span class="slide-badge">🎁 Vòng Quay May Mắn</span>
+                        <h2>THỬ VẬN MAY NGAY<br>NHẬN MÃ ĐẾN 50K</h2>
+                        <p>Quay bánh xe nhận ngay các coupon độc quyền: LUCKY10, LUCKY20, FREESHIP và nhiều phần quà hấp dẫn!</p>
+                        <button type="button" class="btn btn-lg" onclick="openLuckyWheelModal()">Quay Ngay →</button>
+                    </div>
+                    <div class="slide-image">🎯</div>
+                </div>
+
+                <!-- Slide 3: AI Chatbot Assistant Promo -->
+                <div class="slide slide-chatbot">
+                    <div class="slide-content">
+                        <span class="slide-badge">🤖 Trợ Lý Sách AI</span>
+                        <h2>TRÒ CHUYỆN CÙNG AI<br>MUA SÁCH TRONG 1 GIÂY</h2>
+                        <p>Trợ lý AI hỗ trợ tìm sách thông minh, tự động thêm sách vào giỏ hàng và tặng mã giảm giá độc quyền AIKHACHHANG!</p>
+                        <button type="button" class="btn btn-lg" onclick="toggleChatbot()">Trò Chuyện Ngay →</button>
+                    </div>
+                    <div class="slide-image">🤖</div>
+                </div>
             </div>
-            <div class="hero-image">📖</div>
+
+            <!-- Arrow Controls -->
+            <button type="button" class="slider-arrow slider-arrow-prev" id="sliderPrevBtn" aria-label="Slide trước">‹</button>
+            <button type="button" class="slider-arrow slider-arrow-next" id="sliderNextBtn" aria-label="Slide tiếp theo">›</button>
+
+            <!-- Dot Indicators -->
+            <div class="slider-dots" id="sliderDots">
+                <span class="slider-dot active" data-index="0"></span>
+                <span class="slider-dot" data-index="1"></span>
+                <span class="slider-dot" data-index="2"></span>
+            </div>
         </div>
     }
 
+
     <div id="bookStoreCatalog" style="margin-bottom: 24px; margin-top: 24px;">
         <h2 style="font-size: 24px; font-weight: 700;">
-            @(selectedCategoryId != null ? categories.FirstOrDefault(c => c.Id == selectedCategoryId.Value)?.Name : "Tất cả sách")
+            @{
+                var selectedCat = selectedCategoryId != null ? categories.FirstOrDefault(c => c.Id == selectedCategoryId.Value) : null;
+                var displayTitle = selectedCat != null ? selectedCat.Name : "Tất cả sản phẩm";
+                var isStationery = selectedCat != null && selectedCat.Name.Equals("Dụng cụ học tập", StringComparison.OrdinalIgnoreCase);
+                var unitText = isStationery ? "sản phẩm" : "cuốn sách";
+            }
+            @displayTitle
         </h2>
         @if (!string.IsNullOrEmpty(ViewBag.SearchString))
         {
-            <p style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">Kết quả tìm kiếm cho: <strong>"@ViewBag.SearchString"</strong> (@ViewBag.TotalBooks sách)</p>
+            <p style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">Kết quả tìm kiếm cho: <strong>"@ViewBag.SearchString"</strong> (@ViewBag.TotalBooks @unitText)</p>
         }
         else
         {
-            <p style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">Tìm thấy <strong>@ViewBag.TotalBooks</strong> cuốn sách phù hợp</p>
+            <p style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">Tìm thấy <strong>@ViewBag.TotalBooks</strong> @unitText phù hợp</p>
         }
     </div>
 
     <div class="filter-layout">
         <!-- Filter Sidebar -->
         <aside class="filter-sidebar">
-            <h4>📂 Thể loại sách</h4>
-            <div class="filter-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--dark);">📂 Thể loại sách</h4>
+            <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px;">
                 <a asp-action="Index" asp-route-categoryId="" asp-route-searchString="@ViewBag.SearchString" 
                    style="display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 8px 12px; border-radius: var(--radius-sm); color: @(selectedCategoryId == null ? "var(--primary)" : "var(--gray-700)"); background: @(selectedCategoryId == null ? "var(--primary-light)" : "transparent"); font-weight: @(selectedCategoryId == null ? "bold" : "normal");">
-                    📁 Tất cả thể loại
+                    📁 Tất cả sản phẩm
                 </a>
 
-                @foreach (var cat in categories)
+                @foreach (var cat in categories.Where(c => !c.Name.Equals("Dụng cụ học tập", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var icon = categoryIcons.TryGetValue(cat.Name, out var emoji) ? emoji : "📖";
+                    <a asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-searchString="@ViewBag.SearchString"
+                       style="display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 8px 12px; border-radius: var(--radius-sm); color: @(selectedCategoryId == cat.Id ? "var(--primary)" : "var(--gray-700)"); background: @(selectedCategoryId == cat.Id ? "var(--primary-light)" : "transparent"); font-weight: @(selectedCategoryId == cat.Id ? "bold" : "normal");">
+                        @icon @cat.Name
+                    </a>
+                }
+            </div>
+
+            <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--dark); border-top: 1px solid var(--gray-200); padding-top: 16px;">✏️ Dụng cụ học tập</h4>
+            <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px;">
+                @foreach (var cat in categories.Where(c => c.Name.Equals("Dụng cụ học tập", StringComparison.OrdinalIgnoreCase)))
                 {
                     var icon = categoryIcons.TryGetValue(cat.Name, out var emoji) ? emoji : "📖";
                     <a asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-searchString="@ViewBag.SearchString"
@@ -236,6 +295,110 @@
             if (!searchInput || !mainContent) return;
 
             let searchTimeout;
+            let heroSliderInterval;
+
+            // ===== HERO CAROUSEL / SLIDER LOGIC =====
+            function initHeroSlider() {
+                // Clear any existing interval first to prevent speed-up bugs
+                if (heroSliderInterval) {
+                    clearInterval(heroSliderInterval);
+                }
+
+                const slider = document.getElementById('homeHeroSlider');
+                if (!slider) return;
+
+                const track = document.getElementById('sliderTrack');
+                const slides = document.querySelectorAll('.slide');
+                const dots = document.querySelectorAll('.slider-dot');
+                const prevBtn = document.getElementById('sliderPrevBtn');
+                const nextBtn = document.getElementById('sliderNextBtn');
+
+                if (!track || slides.length === 0) return;
+
+                let currentIndex = 0;
+                const slideDuration = 5000; // 5 seconds
+
+                function updateSlider() {
+                    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    dots.forEach((dot, index) => {
+                        if (index === currentIndex) {
+                            dot.classList.add('active');
+                        } else {
+                            dot.classList.remove('active');
+                        }
+                    });
+                }
+
+                function nextSlide() {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateSlider();
+                }
+
+                function prevSlide() {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateSlider();
+                }
+
+                function goToSlide(index) {
+                    currentIndex = index;
+                    updateSlider();
+                }
+
+                function startAutoSlide() {
+                    clearInterval(heroSliderInterval);
+                    heroSliderInterval = setInterval(nextSlide, slideDuration);
+                }
+
+                function stopAutoSlide() {
+                    clearInterval(heroSliderInterval);
+                }
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        prevSlide();
+                        startAutoSlide();
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        nextSlide();
+                        startAutoSlide();
+                    });
+                }
+
+                dots.forEach(dot => {
+                    dot.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const index = parseInt(dot.getAttribute('data-index'));
+                        goToSlide(index);
+                        startAutoSlide();
+                    });
+                });
+
+                slider.addEventListener('mouseenter', stopAutoSlide);
+                slider.addEventListener('mouseleave', startAutoSlide);
+
+                // Initial start
+                startAutoSlide();
+            }
+
+            // Expose CTA triggers to window globally so inline onclick handlers work
+            window.openLuckyWheelModal = function() {
+                const wheelToggle = document.getElementById('lucky-wheel-toggle');
+                if (wheelToggle) {
+                    wheelToggle.click();
+                }
+            };
+
+            window.toggleChatbot = function() {
+                const chatbotToggle = document.getElementById('chatbot-toggle');
+                if (chatbotToggle) {
+                    chatbotToggle.click();
+                }
+            };
 
             // Helper to load content via AJAX
             function loadCatalog(url, updateUrlInHistory = true) {
@@ -257,6 +420,7 @@
 
                         if (newMainContent) {
                             mainContent.innerHTML = newMainContent.innerHTML;
+                            initHeroSlider(); // Re-initialize slider on dynamic navigation
                         }
 
                         mainContent.style.opacity = '1';
@@ -314,6 +478,10 @@
             window.addEventListener('popstate', function() {
                 loadCatalog(window.location.href, false);
             });
+
+            // Initial call to set up the slider
+            initHeroSlider();
         });
+
     </script>
 }

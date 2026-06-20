@@ -2,6 +2,25 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tuan6.Models;
 using Tuan6.Repositories;
+using Tuan6.Services;
+
+// Load environment variables from .env file if it exists
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        var trimmedLine = line.Trim();
+        if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("#")) continue;
+        var parts = trimmedLine.Split('=', 2);
+        if (parts.Length == 2)
+        {
+            var key = parts[0].Trim();
+            var val = parts[1].Trim().Trim('"').Trim('\'');
+            Environment.SetEnvironmentVariable(key, val);
+        }
+    }
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +52,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Register Repositories
 builder.Services.AddScoped<IBookRepository, EFBookRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
+
+// Register Services
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddHttpClient();
 
 // Add Session Services
 builder.Services.AddDistributedMemoryCache();

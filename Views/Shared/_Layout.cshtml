@@ -196,12 +196,9 @@
                     var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
                     var cartCount = cart.Sum(item => item.Quantity);
                 }
-                <a class="header-btn" asp-area="" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
+                <a class="header-btn" asp-area="" asp-controller="Cart" asp-action="Index" title="Giỏ hàng" id="cartHeaderBtn">
                     🛒
-                    @if (cartCount > 0)
-                    {
-                        <span class="badge">@cartCount</span>
-                    }
+                    <span class="badge" id="cartBadge" style="@(cartCount > 0 ? "" : "display: none;")">@cartCount</span>
                 </a>
 
                 @if (SignInManager.IsSignedIn(User))
@@ -327,7 +324,16 @@
         }
     </script>
     
+    <!-- Chatbot Widget Script -->
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Chatbot Widget -->
+    <partial name="_ChatbotPartial" />
+
+    <!-- Lucky Wheel Widget -->
+    <partial name="_LuckyWheelPartial" />
 
 </body>
 </html>
