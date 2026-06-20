@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tuan6.Models;
+using Tuan6.Services;
 
 namespace Tuan6.Controllers
 {
@@ -10,15 +12,18 @@ namespace Tuan6.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailService _emailService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
 
         // GET: /Account/Register
@@ -225,18 +230,93 @@ namespace Tuan6.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                ModelState.AddModelError(string.Empty, "Email này không tồn tại trong hệ thống.");
+                return View(model);
+            }
+
+            // Generate 6-digit OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            // Store in Session
+            HttpContext.Session.SetString("PasswordResetEmail", model.Email);
+            HttpContext.Session.SetString("PasswordResetOtp", otp);
+            HttpContext.Session.SetString("PasswordResetOtpExpiry", DateTime.Now.AddMinutes(5).ToString());
+
+            // Send via email service
+            var subject = "Mã xác thực khôi phục mật khẩu";
+            var body = $"<h3>Mã xác thực (OTP) của bạn là: <b style='color:#5e72e4;font-size:24px;letter-spacing:2px;'>{otp}</b></h3><p>Mã này có hiệu lực trong vòng 5 phút.</p>";
+            await _emailService.SendEmailAsync(model.Email, subject, body);
+
+            // Save to TempData for simulation display
+            TempData["SimulatedOtp"] = otp;
+
+            return RedirectToAction("VerifyOtp", new { email = model.Email });
+        }
+
+        // GET: /Account/VerifyOtp
+        [HttpGet]
+        public IActionResult VerifyOtp(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
+            // Keep simulated OTP if redirecting
+            TempData.Keep("SimulatedOtp");
+
+            var model = new VerifyOtpViewModel { Email = email };
+            return View(model);
+        }
+
+        // POST: /Account/VerifyOtp
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyOtp(VerifyOtpViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var sessionEmail = HttpContext.Session.GetString("PasswordResetEmail");
+            var sessionOtp = HttpContext.Session.GetString("PasswordResetOtp");
+            var sessionExpiryStr = HttpContext.Session.GetString("PasswordResetOtpExpiry");
+
+            if (string.IsNullOrEmpty(sessionEmail) || string.IsNullOrEmpty(sessionOtp) || string.IsNullOrEmpty(sessionExpiryStr))
+            {
+                ModelState.AddModelError(string.Empty, "Yêu cầu khôi phục mật khẩu không hợp lệ hoặc đã quá hạn.");
+                return View(model);
+            }
+
+            if (sessionEmail != model.Email || sessionOtp != model.OtpCode)
+            {
+                TempData.Keep("SimulatedOtp");
+                ModelState.AddModelError(string.Empty, "Mã xác nhận (OTP) không chính xác.");
+                return View(model);
+            }
+
+            if (DateTime.TryParse(sessionExpiryStr, out var expiry) && DateTime.Now > expiry)
+            {
+                TempData.Keep("SimulatedOtp");
+                ModelState.AddModelError(string.Empty, "Mã xác nhận (OTP) đã hết hạn.");
+                return View(model);
+            }
+
+            // Verification successful! Generate password reset token
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Đã có lỗi xảy ra. Không tìm thấy tài khoản.");
+                return View(model);
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.Action("ResetPassword", "Account", 
-                new { email = model.Email, token = token }, Request.Scheme);
 
-            // Since there is no real SMTP, store the link in TempData so we can display it on the confirmation page as simulation!
-            TempData["ResetLink"] = callbackUrl;
+            // Store verification success flag in session
+            HttpContext.Session.SetString("OtpVerified", "true");
 
-            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            return RedirectToAction(nameof(ResetPassword), new { email = model.Email, token = token });
         }
 
         // GET: /Account/ForgotPasswordConfirmation
@@ -254,6 +334,14 @@ namespace Tuan6.Controllers
             if (email == null || token == null)
             {
                 return BadRequest("Email and token are required for password reset.");
+            }
+
+            // Verify OTP verification was successful
+            var otpVerified = HttpContext.Session.GetString("OtpVerified");
+            var sessionEmail = HttpContext.Session.GetString("PasswordResetEmail");
+            if (otpVerified != "true" || sessionEmail != email)
+            {
+                return RedirectToAction(nameof(ForgotPassword));
             }
 
             var model = new ResetPasswordViewModel
@@ -274,16 +362,29 @@ namespace Tuan6.Controllers
                 return View(model);
             }
 
+            // Verify OTP verification was successful
+            var otpVerified = HttpContext.Session.GetString("OtpVerified");
+            var sessionEmail = HttpContext.Session.GetString("PasswordResetEmail");
+            if (otpVerified != "true" || sessionEmail != model.Email)
+            {
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                // Don't reveal user details
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
 
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
+                // Clear session
+                HttpContext.Session.Remove("PasswordResetEmail");
+                HttpContext.Session.Remove("PasswordResetOtp");
+                HttpContext.Session.Remove("PasswordResetOtpExpiry");
+                HttpContext.Session.Remove("OtpVerified");
+
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
 
@@ -300,6 +401,90 @@ namespace Tuan6.Controllers
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
+        }
+
+        // POST: /Account/ExternalLogin
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        // GET: /Account/ExternalLoginCallback
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"Lỗi từ dịch vụ ngoài: {remoteError}");
+                return View("Login");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                ModelState.AddModelError(string.Empty, "Không lấy được thông tin đăng nhập Google.");
+                return View("Login");
+            }
+
+            // Sign in the user with this external login provider if they already have a login
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                return LocalRedirect(returnUrl);
+            }
+
+            // Get the email from Google info
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email != null)
+            {
+                // Find if user already exists
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    // Create a new user
+                    user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        FullName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email,
+                        Address = string.Empty
+                    };
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (!createResult.Succeeded)
+                    {
+                        foreach (var error in createResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                        return View("Login");
+                    }
+
+                    // Assign default Member role
+                    if (!await _roleManager.RoleExistsAsync("Member"))
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole("Member"));
+                    }
+                    await _userManager.AddToRoleAsync(user, "Member");
+                }
+
+                // Link external login to user
+                var addLoginResult = await _userManager.AddLoginAsync(user, info);
+                if (addLoginResult.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                    return LocalRedirect(returnUrl);
+                }
+            }
+
+            ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi khi đăng nhập bằng Google.");
+            return View("Login");
         }
     }
 }

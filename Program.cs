@@ -56,7 +56,16 @@ builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 // Register Services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddHttpClient();
+
+// Configure Google Authentication
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? Environment.GetEnvironmentVariable("Authentication__Google__ClientId") ?? "DUMMY_CLIENT_ID";
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? Environment.GetEnvironmentVariable("Authentication__Google__ClientSecret") ?? "DUMMY_CLIENT_SECRET";
+    });
 
 // Add Session Services
 builder.Services.AddDistributedMemoryCache();

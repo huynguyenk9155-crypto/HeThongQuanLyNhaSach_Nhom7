@@ -165,7 +165,6 @@ namespace Tuan6.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET/POST: /Cart/RemoveFromCart
         public IActionResult RemoveFromCart(int bookId)
         {
             var cart = GetCart();
@@ -180,7 +179,6 @@ namespace Tuan6.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: /Cart/ClearCart
         [HttpPost]
         public IActionResult ClearCart()
         {
@@ -252,6 +250,10 @@ namespace Tuan6.Controllers
                     return View(model);
                 }
             }
+
+            ModelState.Remove("Status");
+            ModelState.Remove("User");
+            ModelState.Remove("OrderDetails");
 
             if (ModelState.IsValid)
             {
@@ -339,7 +341,12 @@ namespace Tuan6.Controllers
                     catch (Exception ex)
                     {
                         await transaction.RollbackAsync();
-                        ModelState.AddModelError("", "Đã có lỗi xảy ra khi lưu đơn hàng. Vui lòng thử lại. " + ex.Message);
+                        var errorMessage = "Đã có lỗi xảy ra khi lưu đơn hàng. Vui lòng thử lại. " + ex.Message;
+                        if (ex.InnerException != null)
+                        {
+                            errorMessage += " Details: " + ex.InnerException.Message;
+                        }
+                        ModelState.AddModelError("", errorMessage);
                     }
                 }
             }

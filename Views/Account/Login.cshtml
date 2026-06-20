@@ -52,8 +52,12 @@
             <div class="auth-divider"><span>Hoặc đăng nhập với</span></div>
 
             <div class="social-login">
-                <button class="social-btn">🔵 Google</button>
-                <button class="social-btn">📘 Facebook</button>
+                <form asp-action="ExternalLogin" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" style="width: 100%;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" name="provider" value="Google" class="social-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        🔵 Google
+                    </button>
+                </form>
             </div>
 
             <div class="auth-footer">

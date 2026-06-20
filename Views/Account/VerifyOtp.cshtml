@@ -1,0 +1,59 @@
+@model Tuan6.Models.VerifyOtpViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Xác thực OTP";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BookStore</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="logo-icon">✉️</div>
+                <h1>Xác thực mã OTP</h1>
+                <p>Nhập mã xác nhận đã được gửi về email của bạn</p>
+            </div>
+
+            @if (TempData["SimulatedOtp"] != null)
+            {
+                <div style="background: #e2f0d9; border: 1px dashed #385723; color: #385723; padding: 16px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px; text-align: left;">
+                    <p style="margin: 0 0 5px; font-weight: bold;">Mô phỏng Email OTP (Do chưa cấu hình SMTP):</p>
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: var(--primary);">Mã OTP của bạn là: @TempData["SimulatedOtp"]</p>
+                </div>
+            }
+
+            <form asp-action="VerifyOtp" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Email" />
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;">
+                        <div asp-validation-summary="All"></div>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label asp-for="OtpCode">Mã xác nhận (OTP gồm 6 chữ số)</label>
+                    <input asp-for="OtpCode" type="text" placeholder="Nhập 6 chữ số" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 4px; font-weight: bold;" required />
+                    <span asp-validation-for="OtpCode" style="color: var(--danger); font-size: 12px; display: block; margin-top: 4px;"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-lg">
+                    Xác nhận OTP
+                </button>
+            </form>
+
+            <div class="auth-footer" style="margin-top: 30px;">
+                Quay lại trang <a asp-action="Login">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
