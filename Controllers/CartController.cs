@@ -25,14 +25,29 @@ namespace Tuan6.Controllers
             _context = context;
         }
 
+        private string GetCartKey()
+        {
+            return Tuan6.Helpers.SessionExtensions.GetCartKey(User);
+        }
+
+        private string GetPromoCodeKey()
+        {
+            return Tuan6.Helpers.SessionExtensions.GetPromoCodeKey(User);
+        }
+
+        private string GetDiscountAmountKey()
+        {
+            return Tuan6.Helpers.SessionExtensions.GetDiscountAmountKey(User);
+        }
+
         private List<CartItem> GetCart()
         {
-            return HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+            return HttpContext.Session.GetObjectFromJson<List<CartItem>>(GetCartKey()) ?? new List<CartItem>();
         }
 
         private void SaveCart(List<CartItem> cart)
         {
-            HttpContext.Session.SetObjectAsJson("Cart", cart);
+            HttpContext.Session.SetObjectAsJson(GetCartKey(), cart);
         }
 
         // GET: /Cart
@@ -182,7 +197,7 @@ namespace Tuan6.Controllers
         [HttpPost]
         public IActionResult ClearCart()
         {
-            HttpContext.Session.Remove("Cart");
+            HttpContext.Session.Remove(GetCartKey());
             TempData["SuccessMessage"] = "Đã xóa toàn bộ giỏ hàng.";
             return RedirectToAction("Index");
         }
@@ -202,7 +217,7 @@ namespace Tuan6.Controllers
             
             // Read promo from session
             decimal discount = 0;
-            var discountStr = HttpContext.Session.GetString("DiscountAmount");
+            var discountStr = HttpContext.Session.GetString(GetDiscountAmountKey());
             if (!string.IsNullOrEmpty(discountStr) && decimal.TryParse(discountStr, out var d))
             {
                 discount = d;
@@ -265,7 +280,7 @@ namespace Tuan6.Controllers
                     {
                         // Calculate discount
                         decimal discount = 0;
-                        var discountStr = HttpContext.Session.GetString("DiscountAmount");
+                        var discountStr = HttpContext.Session.GetString(GetDiscountAmountKey());
                         if (!string.IsNullOrEmpty(discountStr) && decimal.TryParse(discountStr, out var d))
                         {
                             discount = d;
@@ -329,11 +344,11 @@ namespace Tuan6.Controllers
                         await transaction.CommitAsync();
 
                         // Clear cart
-                        HttpContext.Session.Remove("Cart");
+                        HttpContext.Session.Remove(GetCartKey());
 
                         // Clear Promo Code session
-                        HttpContext.Session.Remove("AppliedPromoCode");
-                        HttpContext.Session.Remove("DiscountAmount");
+                        HttpContext.Session.Remove(GetPromoCodeKey());
+                        HttpContext.Session.Remove(GetDiscountAmountKey());
 
                         TempData["SuccessMessage"] = "Đặt hàng thành công!";
                         return RedirectToAction("History", "Order");
@@ -353,7 +368,7 @@ namespace Tuan6.Controllers
 
             // Recalculate if validation fails
             decimal failDiscount = 0;
-            var failDiscountStr = HttpContext.Session.GetString("DiscountAmount");
+            var failDiscountStr = HttpContext.Session.GetString(GetDiscountAmountKey());
             if (!string.IsNullOrEmpty(failDiscountStr) && decimal.TryParse(failDiscountStr, out var fd))
             {
                 failDiscount = fd;
@@ -415,8 +430,8 @@ namespace Tuan6.Controllers
             }
 
             // Save to Session
-            HttpContext.Session.SetString("AppliedPromoCode", cleanCode);
-            HttpContext.Session.SetString("DiscountAmount", discountAmount.ToString());
+            HttpContext.Session.SetString(GetPromoCodeKey(), cleanCode);
+            HttpContext.Session.SetString(GetDiscountAmountKey(), discountAmount.ToString());
 
             var newTotal = totalAmount - discountAmount;
             if (newTotal < 0) newTotal = 0;

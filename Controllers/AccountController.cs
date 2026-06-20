@@ -66,6 +66,7 @@ namespace Tuan6.Controllers
 
                     // Sign the user in
                     await _signInManager.SignInAsync(user, isPersistent: false);
+                    Tuan6.Helpers.SessionExtensions.MergeCart(HttpContext.Session, user.Id);
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -107,6 +108,7 @@ namespace Tuan6.Controllers
                     var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
                     if (result.Succeeded)
                     {
+                        Tuan6.Helpers.SessionExtensions.MergeCart(HttpContext.Session, user.Id);
                         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         {
                             return Redirect(returnUrl);
@@ -127,6 +129,7 @@ namespace Tuan6.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            HttpContext.Session.Clear(); // Clear session on logout
             return RedirectToAction("Index", "Home");
         }
 
@@ -437,6 +440,11 @@ namespace Tuan6.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (user != null)
+                {
+                    Tuan6.Helpers.SessionExtensions.MergeCart(HttpContext.Session, user.Id);
+                }
                 return LocalRedirect(returnUrl);
             }
 
@@ -479,6 +487,7 @@ namespace Tuan6.Controllers
                 if (addLoginResult.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                    Tuan6.Helpers.SessionExtensions.MergeCart(HttpContext.Session, user.Id);
                     return LocalRedirect(returnUrl);
                 }
             }

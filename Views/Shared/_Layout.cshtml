@@ -193,7 +193,8 @@
                 </div>
                 
                 @{
-                    var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+                    var cartKey = Tuan6.Helpers.SessionExtensions.GetCartKey(User);
+                    var cart = Context.Session.GetObjectFromJson<List<CartItem>>(cartKey) ?? new List<CartItem>();
                     var cartCount = cart.Sum(item => item.Quantity);
                 }
                 <a class="header-btn" asp-area="" asp-controller="Cart" asp-action="Index" title="Giỏ hàng" id="cartHeaderBtn">

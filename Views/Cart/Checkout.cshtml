@@ -3,7 +3,8 @@
 @using Tuan6.Models
 @{
     ViewData["Title"] = "Thanh toán đơn hàng";
-    var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+    var cartKey = Tuan6.Helpers.SessionExtensions.GetCartKey(User);
+    var cart = Context.Session.GetObjectFromJson<List<CartItem>>(cartKey) ?? new List<CartItem>();
     var totalAmount = cart.Sum(i => i.TotalPrice);
 }
 
@@ -145,8 +146,8 @@
 
             @{
                 var discountAmount = 0m;
-                var discountStr = Context.Session.GetString("DiscountAmount");
-                var appliedCode = Context.Session.GetString("AppliedPromoCode") ?? "";
+                var discountStr = Context.Session.GetString(Tuan6.Helpers.SessionExtensions.GetDiscountAmountKey(User));
+                var appliedCode = Context.Session.GetString(Tuan6.Helpers.SessionExtensions.GetPromoCodeKey(User)) ?? "";
                 if (!string.IsNullOrEmpty(discountStr) && decimal.TryParse(discountStr, out var d))
                 {
                     discountAmount = d;

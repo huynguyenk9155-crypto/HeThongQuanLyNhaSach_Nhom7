@@ -226,6 +226,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const userId = '@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous")';
         const floatingBtn = document.getElementById("lucky-wheel-toggle");
         const modal = document.getElementById("lucky-wheel-modal");
         const closeBtn = document.getElementById("lucky-wheel-close");
@@ -330,7 +331,8 @@
             if (isSpinning) return;
 
             // Check if user has already spun today
-            const lastSpin = localStorage.getItem("last_spin_date");
+            const spinKey = `last_spin_date_${userId}`;
+            const lastSpin = localStorage.getItem(spinKey);
             const today = new Date().toDateString();
             if (lastSpin === today) {
                 if (typeof showToast === 'function') {
@@ -370,7 +372,7 @@
                 } else {
                     // Animation complete
                     isSpinning = false;
-                    localStorage.setItem("last_spin_date", today);
+                    localStorage.setItem(spinKey, today);
                     const selected = segments[randomSegment];
                     
                     showWinner(selected);

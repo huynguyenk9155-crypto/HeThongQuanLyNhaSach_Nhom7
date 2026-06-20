@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Tuan6.Services;
+using Tuan6.Models;
+using System.Threading.Tasks;
 
 namespace Tuan6.Controllers
 {
@@ -9,11 +12,16 @@ namespace Tuan6.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly ILogger<PaymentController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public PaymentController(IPaymentService paymentService, ILogger<PaymentController> logger)
+        public PaymentController(
+            IPaymentService paymentService, 
+            ILogger<PaymentController> logger,
+            ApplicationDbContext context)
         {
             _paymentService = paymentService;
             _logger = logger;
+            _context = context;
         }
 
         /// <summary>
