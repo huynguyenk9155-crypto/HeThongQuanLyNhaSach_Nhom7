@@ -1,0 +1,115 @@
+"""
+HƯỚNG DẪN CÀI ĐẶT VÀ SỬ DỤNG CÁC TÍNH NĂNG MỚI
+
+## 1. QR PAYMENT (Thanh toán QR)
+
+### Tính năng:
+- Hỗ trợ thanh toán QR từ VNPay và MoMo
+- Tự động sinh mã QR cho từng đơn hàng
+- Hiển thị thông tin thanh toán rõ ràng
+
+### Cấu hình:
+1. Cập nhật appsettings.json với thông tin VNPay/MoMo của bạn:
+   - VNPay TmnCode, ApiUrl, ReturnUrl, HashSecret
+   - MoMo PhoneNumber, Name
+
+2. Các API endpoints:
+   - POST /api/payment/generate-qr - Sinh mã QR
+   - GET /api/payment/qr-image - Lấy hình ảnh QR
+
+3. Cách sử dụng:
+   - Khi checkout, chọn "VNPay QR" hoặc "MoMo QR"
+   - Mã QR sẽ tự động sinh ra
+   - Khách hàng quét mã QR để thanh toán
+   - Sau thanh toán, nhấn "Xác nhận đặt hàng"
+
+### File liên quan:
+- Services/PaymentService.cs - Xử lý QR generation
+- Controllers/PaymentController.cs - API endpoints
+- Views/Cart/Checkout.cshtml - UI thanh toán
+- appsettings.json - Cấu hình
+
+
+## 2. CHATBOT AI (Trợ lý thông minh)
+
+### Tính năng:
+- Hỗ trợ khách hàng 24/7 với AI
+- Hỗ trợ OpenAI và Google Gemini
+- Floating button ở góc dưới phải
+- Trả lời câu hỏi tự động và hỗ trợ khách hàng
+
+### Cấu hình:
+1. Chọn AI Provider trong appsettings.json:
+   - "openai" (khuyên dùng) hoặc "gemini"
+
+2. Lấy API Key:
+   - OpenAI: https://platform.openai.com/account/api-keys
+   - Google Gemini: https://makersuite.google.com/app/apikey
+
+3. Cập nhật appsettings.json:
+   {
+     "Chatbot": {
+       "Provider": "openai",
+       "OpenAI": {
+         "ApiKey": "YOUR_API_KEY_HERE"
+       }
+     }
+   }
+
+### Cách sử dụng:
+- Floating button AI 🤖 ở góc dưới phải
+- Nhấn để mở chat
+- Gõ câu hỏi, bot sẽ trả lời tự động
+- Tính năng default fallback nếu API không khả dụng
+
+### File liên quan:
+- Services/ChatbotService.cs - Xử lý AI
+- Controllers/ChatbotController.cs - API endpoints
+- Views/Shared/_ChatbotPartial.cshtml - UI widget
+- wwwroot/js/chatbot.js - Frontend logic
+- appsettings.json - Cấu hình
+
+
+## 3. CÁC THAY ĐỔI KHÁC
+
+### Program.cs:
+- Thêm PaymentService, ChatbotService
+- Thêm HttpClientFactory
+
+### Models:
+- Thêm PaymentTransaction model để track các giao dịch
+
+### Database Migration:
+Nên tạo migration để thêm PaymentTransaction table:
+  dotnet ef migrations add AddPaymentTransaction
+  dotnet ef database update
+
+### Cài đặt Dependencies:
+Không cần package mới - các thư viện cần thiết đã có sẵn
+
+
+## 4. TROUBLESHOOTING
+
+### QR Code không hiển thị:
+- Kiểm tra appsettings.json có cấu hình đúng
+- Kiểm tra API endpoints có hoạt động
+
+### Chatbot không hoạt động:
+- Kiểm tra API Key đúng trong appsettings.json
+- Kiểm tra kết nối internet
+- Xem browser console để debug
+
+### CORS error:
+- Kiểm tra controller api có [ApiController] attribute
+- Kiểm tra route prefixes đúng
+
+
+## 5. TÍNH NĂNG TƯƠNG LAI
+
+- Webhook từ VNPay/MoMo để tự động update order status
+- Lưu conversation history
+- Analytics cho chatbot
+- Tích hợp các payment gateway khác
+- Multi-language support
+"""
+

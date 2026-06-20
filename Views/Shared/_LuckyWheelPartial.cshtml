@@ -1,0 +1,455 @@
+<!-- Lucky Spin Wheel Partial -->
+<div id="lucky-wheel-widget" class="lucky-wheel-widget">
+    <!-- Floating Gift Button -->
+    <div id="lucky-wheel-toggle" class="lucky-wheel-toggle" title="Vòng quay may mắn">
+        <span class="gift-icon">🎁</span>
+        <span class="gift-text">Vòng Quay</span>
+    </div>
+
+    <!-- Lucky Wheel Modal -->
+    <div id="lucky-wheel-modal" class="lucky-wheel-modal" style="display: none;">
+        <div class="lucky-modal-overlay"></div>
+        <div class="lucky-modal-content">
+            <button id="lucky-wheel-close" class="lucky-modal-close" title="Đóng">&times;</button>
+            <h3 style="font-size: 20px; font-weight: 700; text-align: center; margin-top: 10px; margin-bottom: 5px; color: #333;">🎡 VÒNG QUAY MAY MẮN 🎡</h3>
+            <p style="font-size: 13px; color: #888; text-align: center; margin-bottom: 20px;">Mỗi ngày 1 lượt quay - Nhận ngay Voucher giảm giá khủng!</p>
+            
+            <!-- Wheel Container -->
+            <div class="wheel-outer-container">
+                <div class="wheel-pointer">▼</div>
+                <canvas id="wheel-canvas" width="320" height="320"></canvas>
+                <button id="spin-btn" class="spin-btn">QUAY</button>
+            </div>
+
+            <!-- Result Box -->
+            <div id="spin-result" class="spin-result" style="display: none;">
+                <div style="font-size: 28px; margin-bottom: 10px;">🎉 Chúc mừng bạn! 🎉</div>
+                <div style="font-size: 15px; color: #555; margin-bottom: 12px;">Bạn đã trúng thưởng phần quà:</div>
+                <div id="reward-text" style="font-size: 22px; font-weight: 800; color: #f5365c; margin-bottom: 15px;">Giảm giá 20%</div>
+                <div style="font-size: 13px; color: #777; margin-bottom: 6px;">Mã giảm giá của bạn:</div>
+                <div id="reward-code" class="reward-code">LUCKY20</div>
+                <div id="applied-status" style="font-size: 12px; color: #2dce89; font-weight: bold; margin-top: 8px;">Mã đã được tự động áp dụng vào giỏ hàng!</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Lucky Wheel Floating Widget */
+    .lucky-wheel-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 95px; /* Floats next to Chatbot (which is at right: 20px) */
+        z-index: 998;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .lucky-wheel-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #ff9f43 0%, #ff5252 100%);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(255, 82, 82, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-weight: bold;
+        font-size: 14px;
+        animation: pulseGift 2s infinite;
+    }
+
+    .lucky-wheel-toggle:hover {
+        transform: scale(1.08) translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255, 82, 82, 0.6);
+    }
+
+    .lucky-wheel-toggle .gift-icon {
+        font-size: 20px;
+    }
+
+    @@keyframes pulseGift {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Modal Styling */
+    .lucky-wheel-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lucky-modal-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+    }
+
+    .lucky-modal-content {
+        position: relative;
+        background: white;
+        width: 400px;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 10001;
+    }
+
+    @@keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .lucky-modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 28px;
+        background: transparent;
+        border: none;
+        color: #aaa;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+
+    .lucky-modal-close:hover {
+        color: #333;
+    }
+
+    /* Wheel Canvas */
+    .wheel-outer-container {
+        position: relative;
+        width: 320px;
+        height: 320px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .wheel-pointer {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 32px;
+        color: #ff5252;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10;
+        animation: wiggle 1s infinite alternate;
+    }
+
+    #wheel-canvas {
+        border-radius: 50%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        background: #fff;
+    }
+
+    .spin-btn {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #fff;
+        border: 4px solid #ff5252;
+        color: #ff5252;
+        font-weight: 900;
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        z-index: 5;
+        outline: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.1s;
+    }
+
+    .spin-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Result styling */
+    .spin-result {
+        background: #f8f9fe;
+        border: 2px dashed #ff9f43;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+        animation: popUpResult 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes popUpResult {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reward-code {
+        display: inline-block;
+        background: white;
+        color: #333;
+        font-family: monospace;
+        font-size: 20px;
+        font-weight: 700;
+        padding: 8px 20px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        letter-spacing: 2px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .reward-code:hover {
+        border-color: #ff5252;
+        background: #fff5f5;
+        color: #ff5252;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const floatingBtn = document.getElementById("lucky-wheel-toggle");
+        const modal = document.getElementById("lucky-wheel-modal");
+        const closeBtn = document.getElementById("lucky-wheel-close");
+        const spinBtn = document.getElementById("spin-btn");
+        const canvas = document.getElementById("wheel-canvas");
+        const ctx = canvas.getContext("2d");
+        const resultBox = document.getElementById("spin-result");
+        const rewardText = document.getElementById("reward-text");
+        const rewardCode = document.getElementById("reward-code");
+
+        // Define Segments matching backend codes
+        const segments = [
+            { text: "Giảm 10%", code: "LUCKY10", color: "#667eea" },
+            { text: "Giảm 20%", code: "LUCKY20", color: "#764ba2" },
+            { text: "Giảm 50k", code: "LUCKY50K", color: "#2dce89" },
+            { text: "Free Ship", code: "FREESHIP", color: "#ff9f43" },
+            { text: "Giảm 10%", code: "LUCKY10", color: "#f5365c" },
+            { text: "Giảm 20%", code: "LUCKY20", color: "#11cdef" },
+            { text: "Giảm 50k", code: "LUCKY50K", color: "#fb6340" },
+            { text: "Free Ship", code: "FREESHIP", color: "#ff4757" }
+        ];
+
+        const numSegments = segments.length;
+        const arc = Math.PI / (numSegments / 2);
+        let startAngle = 0;
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        // Draw Wheel on Canvas
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX - 10;
+
+            for (let i = 0; i < numSegments; i++) {
+                const angle = startAngle + i * arc;
+                
+                // Draw sector slice
+                ctx.fillStyle = segments[i].color;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arc, false);
+                ctx.lineTo(centerX, centerY);
+                ctx.fill();
+
+                // Draw white separator line
+                ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 13px system-ui";
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arc / 2);
+                const textX = radius * 0.55;
+                ctx.fillText(segments[i].text, textX, 5);
+                ctx.restore();
+            }
+
+            // Draw center white circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 35, 0, 2 * Math.PI, false);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.strokeStyle = "#ff5252";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        // Modal triggers
+        floatingBtn.addEventListener("click", () => {
+            modal.style.display = "flex";
+            drawWheel();
+            resultBox.style.display = "none";
+            spinBtn.disabled = false;
+        });
+
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        // Close on clicking outside modal content
+        modal.querySelector(".lucky-modal-overlay").addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        // Copy code helper
+        rewardCode.addEventListener("click", () => {
+            navigator.clipboard.writeText(rewardCode.textContent)
+                .then(() => {
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Đã copy mã giảm giá vào bộ nhớ tạm!');
+                    }
+                });
+        });
+
+        // Spin Action
+        spinBtn.addEventListener("click", () => {
+            if (isSpinning) return;
+
+            // Check if user has already spun today
+            const lastSpin = localStorage.getItem("last_spin_date");
+            const today = new Date().toDateString();
+            if (lastSpin === today) {
+                if (typeof showToast === 'function') {
+                    showToast('error', 'Mỗi ngày bạn chỉ được nhận 1 lượt quay. Hãy quay lại vào ngày mai!');
+                }
+                return;
+            }
+
+            isSpinning = true;
+            spinBtn.disabled = true;
+            resultBox.style.display = "none";
+
+            // Random spin target
+            const spins = 5 + Math.floor(Math.random() * 5); // 5 to 9 full spins
+            const randomSegment = Math.floor(Math.random() * numSegments);
+            
+            // Calculate final angle to stop at randomSegment
+            // Arc index points clockwise, so to align with pointer at top (-Math.PI/2), we subtract the angle
+            const targetAngle = spins * 2 * Math.PI + (numSegments - randomSegment) * arc - (arc / 2) - Math.PI / 2;
+
+            let duration = 4000; // 4 seconds spin
+            let startTimestamp = null;
+
+            function animate(timestamp) {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const elapsed = timestamp - startTimestamp;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing out quadratic function
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                startAngle = easeOut * targetAngle;
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation complete
+                    isSpinning = false;
+                    localStorage.setItem("last_spin_date", today);
+                    const selected = segments[randomSegment];
+                    
+                    showWinner(selected);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        });
+
+        function showWinner(selected) {
+            rewardText.textContent = selected.text === "Free Ship" ? selected.text : "Giảm giá " + selected.text;
+            rewardCode.textContent = selected.code;
+            resultBox.style.display = "block";
+
+            // Call AJAX to apply promo code in Session automatically!
+            let params = new URLSearchParams();
+            params.append('code', selected.code);
+
+            fetch('/Cart/ApplyPromoCodeJson', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof showToast === 'function') {
+                        showToast('success', `Chúc mừng! Tự động áp dụng thành công mã: ${selected.code}`);
+                    }
+                    
+                    // If they are currently on checkout, update values on page immediately!
+                    const summaryDiscountRow = document.getElementById('summary-discount-row');
+                    const summaryAppliedCode = document.getElementById('summary-applied-code');
+                    const summaryDiscount = document.getElementById('summary-discount');
+                    const summaryTotal = document.getElementById('summary-total');
+                    const summaryFinalRow = document.getElementById('summary-final-row');
+                    const summaryFinal = document.getElementById('summary-final');
+                    const promoCodeInput = document.getElementById('promo-code-input');
+
+                    if (summaryDiscountRow) {
+                        summaryDiscount.textContent = '-' + data.discountAmount.toLocaleString('vi-VN') + 'đ';
+                        summaryAppliedCode.textContent = data.code;
+                        summaryDiscountRow.style.display = 'flex';
+                        
+                        // Cross out old total
+                        if (summaryTotal) {
+                            summaryTotal.style.textDecoration = 'line-through';
+                            summaryTotal.style.color = '#8898aa';
+                            summaryTotal.style.fontSize = '14px';
+                        }
+
+                        // Show final discounted total
+                        if (summaryFinal && summaryFinalRow) {
+                            summaryFinal.textContent = data.newTotal.toLocaleString('vi-VN') + 'đ';
+                            summaryFinalRow.style.display = 'flex';
+                        }
+
+                        if (promoCodeInput) {
+                            promoCodeInput.value = data.code;
+                        }
+                        
+                        // Update global pay variable in checkout script
+                        if (typeof finalPayAmount !== 'undefined') {
+                            finalPayAmount = data.newTotal;
+                        }
+
+                        // Regenerate QR code if applicable
+                        const activeRadio = document.querySelector('input[name="paymentMethod"]:checked');
+                        if (activeRadio && (activeRadio.value === 'vnpay' || activeRadio.value === 'momo')) {
+                            generateQRCode(activeRadio.value);
+                        }
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error applying spun coupon code:', err);
+            });
+        }
+    });
+</script>

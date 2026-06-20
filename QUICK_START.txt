@@ -1,0 +1,151 @@
+QUICK START GUIDE - TUAN6 BOOKSTORE FEATURES
+
+====================================================
+🚀 CÀI ĐẶT NHANH CÁC TÍNH NĂNG MỚI
+====================================================
+
+Đã thêm 2 tính năng chính:
+1. ✨ QR THANH TOÁN (VNPay & MoMo)
+2. 🤖 CHATBOT AI
+
+
+📋 BƯỚC 1: CHUẨN BỊ DATABASE
+====================================================
+
+Mở Terminal/PowerShell trong thư mục project và chạy:
+
+  dotnet ef migrations add AddPaymentTransaction
+  dotnet ef database update
+
+
+🔧 BƯỚC 2: CẤU HÌNH APPSETTINGS.JSON
+====================================================
+
+Mở file: appsettings.json
+
+A. VNPay QR Configuration:
+   - Cập nhật "VNPay": { "TmnCode": "YOUR_TMN_CODE" }
+   - Lấy từ: https://sandbox.vnpayment.vn
+
+B. MoMo QR Configuration:
+   - Cập nhật "Momo": { "PhoneNumber": "0123456789" }
+   - Thay bằng số điện thoại của bạn
+
+C. Chatbot AI Configuration:
+   - Chọn provider: "openai" hoặc "gemini"
+   - Lấy API Key:
+     * OpenAI: https://platform.openai.com/api-keys
+     * Gemini: https://makersuite.google.com/app/apikey
+   - Cập nhật vào appsettings.json
+
+
+💳 BƯỚC 3: KIỂM TRA QR PAYMENT
+====================================================
+
+1. Chạy ứng dụng: dotnet run
+2. Đăng nhập hoặc tạo tài khoản
+3. Thêm sách vào giỏ hàng
+4. Nhấn "Thanh toán"
+5. Chọn phương thức thanh toán:
+   - "VNPay QR" → Hiển thị QR VNPay
+   - "MoMo QR" → Hiển thị QR MoMo
+   - "Thanh toán khi nhận" → COD
+
+
+🤖 BƯỚC 4: KIỂM TRA CHATBOT
+====================================================
+
+1. Nhấn nút 🤖 ở góc dưới phải (Floating button)
+2. Hỏi câu hỏi, ví dụ:
+   - "Bạn có sách nào về Python?"
+   - "Giá sách bao nhiêu?"
+   - "Giao hàng miễn phí không?"
+3. Chatbot sẽ tự động trả lời
+
+
+🎯 CÁC API ENDPOINTS
+====================================================
+
+Chatbot:
+  POST /api/chatbot/send-message
+  {
+    "message": "Bạn có sách gì?",
+    "context": ""
+  }
+
+Payment QR:
+  POST /api/payment/generate-qr
+  {
+    "method": "vnpay",
+    "orderCode": "ORD-123456",
+    "amount": 100000
+  }
+
+  GET /api/payment/qr-image?method=vnpay&orderCode=ORD-123456&amount=100000
+
+
+📁 CÁC FILE ĐÃ THÊM/CẬP NHẬT
+====================================================
+
+Thêm mới:
+  ✅ Services/PaymentService.cs - QR payment
+  ✅ Services/ChatbotService.cs - AI chatbot
+  ✅ Controllers/PaymentController.cs - Payment API
+  ✅ Controllers/ChatbotController.cs - Chatbot API
+  ✅ Models/PaymentTransaction.cs - Payment tracking
+  ✅ Views/Shared/_ChatbotPartial.cshtml - Chatbot UI
+  ✅ wwwroot/js/chatbot.js - Chatbot logic
+  ✅ setup.sh - Setup script
+  ✅ SETUP_GUIDE.txt - Detailed guide
+  ✅ QUICK_START.txt - This file
+
+Cập nhật:
+  📝 Program.cs - Thêm services
+  📝 appsettings.json - Thêm configuration
+  📝 Views/Cart/Checkout.cshtml - Thêm payment method UI
+  📝 Views/Shared/_Layout.cshtml - Thêm chatbot widget
+  📝 Models/ApplicationDbContext.cs - Thêm PaymentTransaction
+
+
+⚙️ TROUBLESHOOTING
+====================================================
+
+Lỗi: Migration không chạy
+  → Kiểm tra: dotnet ef --version
+  → Cài: dotnet tool install --global dotnet-ef
+
+Lỗi: QR code không hiển thị
+  → Kiểm tra browser console (F12)
+  → Kiểm tra appsettings.json config đúng
+
+Lỗi: Chatbot không hoạt động
+  → Kiểm tra API Key đã cập nhật
+  → Kiểm tra internet connection
+  → Kiểm tra browser console errors
+
+Lỗi: Database connection
+  → Kiểm tra connection string đúng
+  → Kiểm tra SQL Server đang chạy
+
+
+📞 HỖ TRỢ
+====================================================
+
+Để tắt chatbot AI (fallback only):
+  Trong appsettings.json: đặt invalid API Key
+  Chatbot sẽ trả lời với canned responses
+
+Để tắt QR payment:
+  Không chọn VNPay/MoMo, chỉ dùng COD
+
+
+🎉 HOÀN THÀNH!
+====================================================
+
+Ứng dụng của bạn đã có:
+✅ QR Thanh toán (VNPay & MoMo)
+✅ Chatbot AI 24/7
+✅ Payment Transaction Tracking
+✅ Modern UI/UX
+
+Hãy test và enjoy! 🚀

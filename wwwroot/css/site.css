@@ -564,59 +564,276 @@
             padding: 24px 32px;
         }
 
-        /* Hero Banner */
-        .hero-banner {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Hero Slider */
+        .hero-slider {
+            position: relative;
+            width: 100%;
+            height: 340px;
             border-radius: var(--radius-lg);
-            padding: 48px;
-            color: white;
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .slider-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 32px;
+            padding: 48px;
+            color: white;
             position: relative;
             overflow: hidden;
+            user-select: none;
         }
 
-        .hero-banner::after {
+        /* Slide specific styles */
+        .slide-fahasa {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        .slide-luckywheel {
+            background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+        }
+
+        .slide-chatbot {
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+        }
+
+        /* Decorative circles on slides */
+        .slide::after {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 400px;
-            height: 400px;
-            background: rgba(255,255,255,0.1);
+            top: -30%;
+            right: -5%;
+            width: 380px;
+            height: 380px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .hero-content h2 {
-            font-size: 32px;
+        .slide::before {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: 25%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            max-width: 60%;
+        }
+
+        .slide-content .slide-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+        }
+
+        .slide-content h2 {
+            font-size: 34px;
             font-weight: 800;
             margin-bottom: 12px;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .hero-content p {
+        .slide-content p {
             font-size: 16px;
             opacity: 0.9;
             margin-bottom: 24px;
-            max-width: 500px;
+            line-height: 1.5;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        .hero-content .btn {
+        .slide-content .btn {
             background: white;
-            color: var(--primary);
+            color: var(--dark);
             font-weight: 700;
+            box-shadow: var(--shadow);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .hero-content .btn:hover {
-            background: var(--primary-light);
+        .slide-content .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        .hero-image {
+        .slide-fahasa .btn {
+            color: #ff4b2b;
+        }
+
+        .slide-luckywheel .btn {
+            color: #4a00e0;
+        }
+
+        .slide-chatbot .btn {
+            color: #0072ff;
+        }
+
+        .slide-image {
             font-size: 120px;
             position: relative;
-            z-index: 1;
+            z-index: 2;
+            margin-right: 48px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+            transition: transform 0.5s ease;
+            animation: floatEmoji 4s ease-in-out infinite alternate;
         }
+
+        .slide:hover .slide-image {
+            transform: scale(1.08) rotate(5deg);
+        }
+
+        @keyframes floatEmoji {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
+        }
+
+        /* Arrows controls */
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scale(0.9);
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .hero-slider:hover .slider-arrow {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .slider-arrow:hover {
+            background: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .slider-arrow-prev {
+            left: 20px;
+        }
+
+        .slider-arrow-next {
+            right: 20px;
+        }
+
+        /* Dot Indicators */
+        .slider-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: white;
+        }
+
+        /* Responsive styling for slider */
+        @media (max-width: 768px) {
+            .hero-slider {
+                height: auto;
+                min-height: 240px;
+            }
+            .slide {
+                padding: 24px;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                gap: 16px;
+            }
+            .slide-content {
+                max-width: 100%;
+            }
+            .slide-content h2 {
+                font-size: 24px;
+            }
+            .slide-content p {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+            .slide-image {
+                display: none;
+            }
+            .slider-arrow {
+                opacity: 0.7;
+                pointer-events: auto;
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            .slider-arrow-prev {
+                left: 10px;
+            }
+            .slider-arrow-next {
+                right: 10px;
+            }
+        }
+
 
         /* Section Title */
         .section-title {
